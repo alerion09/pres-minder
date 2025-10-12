@@ -1,8 +1,8 @@
 ---
-description: 
-globs: *.tsx,*.astro
-alwaysApply: false
+apply: by file patterns
+patterns: *.tsx,*.astro
 ---
+
 ## Frontend
 
 ### General Guidelines

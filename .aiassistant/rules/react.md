@@ -1,9 +1,9 @@
 ---
-description: 
-globs: *.tsx
-alwaysApply: false
+apply: by file patterns
+patterns: *.tsx
 ---
-### Guidelines for React
+
+# Guidelines for React
 
 - Use functional components with hooks instead of class components
 - Never use "use client" and other Next.js directives as we use React with Astro

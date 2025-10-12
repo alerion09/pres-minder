@@ -1,8 +1,8 @@
 ---
-description: 
-globs: src/db/*.ts,src/middleware/*.ts,src/lib/*.ts
-alwaysApply: false
+apply: by file patterns
+patterns: src/db/*.ts,src/middleware/*.ts,src/lib/*.ts
 ---
+
 ### Backend and Database
 
 - Use Supabase for backend services, including authentication and database interactions.
