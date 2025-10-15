@@ -2,23 +2,25 @@
 
 ## 1. Resources
 
-| Resource | Database Table | Description                                                       |
-|----------|---------------|-------------------------------------------------------------------|
-| Account | auth.users | User account management operations - managed throuh Supabase Auth |
-| Relations | relations | Dictionary of relationship types                                  |
-| Occasions | occasions | Dictionary of occasion types                                      |
-| Ideas | ideas | Gift ideas with metadata                                          |
+| Resource  | Database Table | Description                                                       |
+| --------- | -------------- | ----------------------------------------------------------------- |
+| Account   | auth.users     | User account management operations - managed throuh Supabase Auth |
+| Relations | relations      | Dictionary of relationship types                                  |
+| Occasions | occasions      | Dictionary of occasion types                                      |
+| Ideas     | ideas          | Gift ideas with metadata                                          |
 
 ## 2. Endpoints
 
 ### 2.2 Dictionary Resources
 
 #### GET /api/relations
+
 Retrieve all available relationship types.
 
 **Authentication:** Required (JWT)
 
 **Success Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -35,6 +37,7 @@ Retrieve all available relationship types.
 ```
 
 **Error Responses:**
+
 - 401 Unauthorized: Missing or invalid token
   ```json
   {
@@ -43,11 +46,13 @@ Retrieve all available relationship types.
   ```
 
 #### GET /api/occasions
+
 Retrieve all available occasion types.
 
 **Authentication:** Required (JWT)
 
 **Success Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -64,6 +69,7 @@ Retrieve all available occasion types.
 ```
 
 **Error Responses:**
+
 - 401 Unauthorized: Missing or invalid token
   ```json
   {
@@ -76,11 +82,13 @@ Retrieve all available occasion types.
 ### 2.3 Gift Ideas
 
 #### GET /api/ideas
+
 Retrieve paginated list of user's gift ideas.
 
 **Authentication:** Required (JWT)
 
 **Query Parameters:**
+
 - `page` (integer, optional, default: 1): Page number
 - `limit` (integer, optional, default: 20, max: 100): Items per page
 - `sort` (string, optional, default: "created_at"): Sort field (created_at, updated_at, name)
@@ -90,6 +98,7 @@ Retrieve paginated list of user's gift ideas.
 - `source` (string, optional): Filter by source (manual, ai, edited-ai)
 
 **Success Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -121,6 +130,7 @@ Retrieve paginated list of user's gift ideas.
 ```
 
 **Error Responses:**
+
 - 401 Unauthorized: Missing or invalid token
 - 400 Bad Request: Invalid query parameters
   ```json
@@ -131,14 +141,17 @@ Retrieve paginated list of user's gift ideas.
   ```
 
 #### GET /api/ideas/:id
+
 Retrieve a specific gift idea by ID.
 
 **Authentication:** Required (JWT)
 
 **URL Parameters:**
+
 - `id` (integer, required): Idea ID
 
 **Success Response (200 OK):**
+
 ```json
 {
   "data": {
@@ -162,6 +175,7 @@ Retrieve a specific gift idea by ID.
 ```
 
 **Error Responses:**
+
 - 401 Unauthorized: Missing or invalid token
 - 404 Not Found: Idea does not exist or does not belong to user
   ```json
@@ -171,11 +185,13 @@ Retrieve a specific gift idea by ID.
   ```
 
 #### POST /api/ideas
+
 Create a new gift idea.
 
 **Authentication:** Required (JWT)
 
 **Request Body:**
+
 ```json
 {
   "name": "string (required, min 2 characters)",
@@ -192,6 +208,7 @@ Create a new gift idea.
 ```
 
 **Success Response (201 Created):**
+
 ```json
 {
   "data": {
@@ -215,27 +232,28 @@ Create a new gift idea.
 ```
 
 **Error Responses:**
+
 - 401 Unauthorized: Missing or invalid token
 - 400 Bad Request: Validation errors
   ```json
   {
     "error": "Validation error",
-    "details": [
-      "name must be at least 2 characters",
-      "budget_max must be greater than or equal to budget_min"
-    ]
+    "details": ["name must be at least 2 characters", "budget_max must be greater than or equal to budget_min"]
   }
   ```
 
 #### PUT /api/ideas/:id
+
 Update an existing gift idea.
 
 **Authentication:** Required (JWT)
 
 **URL Parameters:**
+
 - `id` (integer, required): Idea ID
 
 **Request Body:**
+
 ```json
 {
   "name": "string (optional, min 2 characters)",
@@ -251,10 +269,12 @@ Update an existing gift idea.
 ```
 
 **Business Logic:**
+
 - If `content` field is updated and the new content is completely different from the old content (not just an edit), and the old `source` was "ai" or "edited-ai", the source may need to be changed to "manual" based on business rules.
 - If content is edited but appears to be a modification rather than complete replacement, source changes from "ai" to "edited-ai".
 
 **Success Response (200 OK):**
+
 ```json
 {
   "data": {
@@ -278,6 +298,7 @@ Update an existing gift idea.
 ```
 
 **Error Responses:**
+
 - 401 Unauthorized: Missing or invalid token
 - 404 Not Found: Idea does not exist or does not belong to user
 - 400 Bad Request: Validation errors
@@ -289,14 +310,17 @@ Update an existing gift idea.
   ```
 
 #### DELETE /api/ideas/:id
+
 Delete a gift idea.
 
 **Authentication:** Required (JWT)
 
 **URL Parameters:**
+
 - `id` (integer, required): Idea ID
 
 **Success Response (200 OK):**
+
 ```json
 {
   "message": "Idea deleted successfully"
@@ -304,6 +328,7 @@ Delete a gift idea.
 ```
 
 **Error Responses:**
+
 - 401 Unauthorized: Missing or invalid token
 - 404 Not Found: Idea does not exist or does not belong to user
   ```json
@@ -313,6 +338,7 @@ Delete a gift idea.
   ```
 
 #### POST /api/ideas/generate
+
 Generate gift idea suggestions using AI without saving them.
 
 **Authentication:** Required (JWT)
@@ -320,6 +346,7 @@ Generate gift idea suggestions using AI without saving them.
 **Rate Limiting:** 10 requests per minute per user
 
 **Request Body:**
+
 ```json
 {
   "age": "integer (optional, 1-500)",
@@ -333,6 +360,7 @@ Generate gift idea suggestions using AI without saving them.
 ```
 
 **Success Response (200 OK):**
+
 ```json
 {
   "data": {
@@ -362,6 +390,7 @@ Generate gift idea suggestions using AI without saving them.
 ```
 
 **Error Responses:**
+
 - 401 Unauthorized: Missing or invalid token
 - 400 Bad Request: Validation errors
   ```json
@@ -411,6 +440,7 @@ The API uses **JWT (JSON Web Token)** authentication provided by Supabase Auth.
 ### 3.4 Protected Endpoints
 
 All endpoints require authentication except:
+
 - Supabase Auth endpoints (handled by Supabase SDK)
 
 ### 3.5 Token Expiration
@@ -427,28 +457,28 @@ All endpoints require authentication except:
 
 #### Ideas Resource
 
-| Field | Validation Rules |
-|-------|-----------------|
-| name | Required, minimum 2 characters |
-| content | Required, string |
-| age | Optional, integer between 1 and 500 |
-| interests | Optional, string |
-| person_description | Optional, string |
-| budget_min | Optional, numeric, must be >= 0 |
-| budget_max | Optional, numeric, must be >= 0 and >= budget_min if both provided |
-| relation_id | Optional, must reference existing relation.id |
-| occasion_id | Optional, must reference existing occasion.id |
-| source | Required, must be one of: 'manual', 'ai', 'edited-ai' |
+| Field              | Validation Rules                                                   |
+| ------------------ | ------------------------------------------------------------------ |
+| name               | Required, minimum 2 characters                                     |
+| content            | Required, string                                                   |
+| age                | Optional, integer between 1 and 500                                |
+| interests          | Optional, string                                                   |
+| person_description | Optional, string                                                   |
+| budget_min         | Optional, numeric, must be >= 0                                    |
+| budget_max         | Optional, numeric, must be >= 0 and >= budget_min if both provided |
+| relation_id        | Optional, must reference existing relation.id                      |
+| occasion_id        | Optional, must reference existing occasion.id                      |
+| source             | Required, must be one of: 'manual', 'ai', 'edited-ai'              |
 
 #### Account Management
 
-| Field | Validation Rules |
-|-------|-----------------|
-| email | Required, valid email format, unique |
-| password | Required, minimum 8 characters |
-| currentPassword | Required for password change |
-| newPassword | Required for password change, minimum 8 characters, must be different from current |
-| confirmation | Required for account deletion, must equal "DELETE_MY_ACCOUNT" |
+| Field           | Validation Rules                                                                   |
+| --------------- | ---------------------------------------------------------------------------------- |
+| email           | Required, valid email format, unique                                               |
+| password        | Required, minimum 8 characters                                                     |
+| currentPassword | Required for password change                                                       |
+| newPassword     | Required for password change, minimum 8 characters, must be different from current |
+| confirmation    | Required for account deletion, must equal "DELETE_MY_ACCOUNT"                      |
 
 ### 4.2 Business Logic Implementation
 
@@ -478,6 +508,7 @@ The `source` field tracks the origin of idea content:
    - Format data for AI prompt
 
 2. **AI prompt structure:**
+
    ```
    Generate 5 gift ideas for:
    - Age: {age}
