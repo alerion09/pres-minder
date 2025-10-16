@@ -36,8 +36,8 @@ Wybór odpowiedniego prezentu na ważną okazję jest często trudnym i stresuj�
 - Każdy zapisany pomysł jest powiązany z kontem użytkownika.
 - Pomysł jest zapisywany w bazie danych po kliknięciu przycisku "Zapisz na liście".
 - Zapisywane są wszystkie dane wejściowe z formularza oraz treść pomysłu.
-- Każdy pomysł ma flagę `source` o wartości `ai` lub `manual`.
-- Pomysł wygenerowany przez AI, nawet po edycji, zachowuje flagę `ai`. Flaga zmienia się na `manual` tylko wtedy, gdy użytkownik usunie całą treść i wpisze nową od zera.
+- Każdy pomysł ma flagę `source` o wartości `ai`, `edited-ai` lub `manual`.
+- Pomysł wygenerowany przez AI ma flagę `ai`, po edycji natomiast `edited-ai`. Flaga zmienia się na `manual` tylko wtedy, gdy użytkownik usunie całą treść i wpisze nową od zera.
 
 ### 3.5. Wyświetlanie i interakcja z pomysłami
 
@@ -113,8 +113,8 @@ Następujące funkcje nie wchodzą w zakres MVP:
   - System wyświetla 5 propozycji wygenerowanych przez AI.
   - Przy każdej propozycji znajduje się przycisk "Akceptuj".
   - Kliknięcie "Akceptuj" kopiuje treść propozycji do edytowalnego pola tekstowego.
-  - Mogę edytować skopiowaną treść przed zapisaniem.
   - Po zapisaniu pomysł ma flagę `source` ustawioną na `ai`.
+  - Mogę edytować skopiowaną treść przed zapisaniem, wtedy jednak pomysł powinien mieć flagę `edited-ai`.
 
 ### US-006: Manualne tworzenie pomysłu
 
@@ -156,8 +156,8 @@ Następujące funkcje nie wchodzą w zakres MVP:
 ### 6.1. Adopcja funkcji generowania przez AI
 
 - Cel: Użytkownicy tworzą 75% pomysłów na prezenty z wykorzystaniem AI.
-- Sposób mierzenia: Analiza stosunku liczby pomysłów z flagą `source: 'ai'` do całkowitej liczby zapisanych pomysłów w bazie danych.
-- Wzór: `(Liczba pomysłów z 'ai' / Łączna liczba pomysłów) * 100%`
+- Sposób mierzenia: Analiza stosunku liczby pomysłów z flagą `source: 'ai'` oraz `source: 'edited-ai'` do całkowitej liczby zapisanych pomysłów w bazie danych.
+- Wzór: `((Liczba pomysłów z 'ai' + 'edited-ai') / Łączna liczba pomysłów) * 100%`
 
 ### 6.2. Zaangażowanie użytkowników
 
