@@ -21,7 +21,7 @@
 
 4. Ekstrakcja logiki do service:
 
-- Nowy serwis w src/lib/services/ideas.service.ts:
+- Nowy serwis w src/lib/services/ideas/get-ideas.service.ts:
   - parseAndValidateGetIdeasQuery(query: URLSearchParams | Record<string,string>)
   - getIdeasForUser(userId, params): { data: IdeaDTO[], pagination }
   - mapIdeaRowToDTO(row)
@@ -184,7 +184,7 @@ Logowanie:
      - occasion_id: z.coerce.number().int().positive().optional()
      - source: z.enum(['manual','ai','edited-ai']).optional()
 3. Serwis
-   - Utwórz plik: src/lib/services/ideas.service.ts
+   - Utwórz plik: src/lib/services/ideas/get-ideas.service.ts
    - Funkcje:
      - parseAndValidateGetIdeasQuery(query): zwraca GetIdeasQueryParams lub rzuca ValidationError (z listą details).
      - buildIdeasQuery(supabase, userId, params): konstruuje zapytanie select z filtrami, sort i zakresem.
