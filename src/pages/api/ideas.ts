@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { ZodError } from "zod";
-import { parseAndValidateGetIdeasQuery, getIdeasForUser } from "@/lib/services/ideas.service";
+import { parseAndValidateGetIdeasQuery, getIdeasForUser } from "@/lib/services/ideas/get-ideas.service";
 
 export const prerender = false;
 
