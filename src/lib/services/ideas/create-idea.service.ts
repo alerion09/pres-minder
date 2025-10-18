@@ -29,14 +29,14 @@ export const createIdeaSchema = z
     interests: z
       .string()
       .trim()
-      .max(5000, "Interests cannot exceed 5000 characters")
+      .max(1000, "Interests cannot exceed 1000 characters")
       .optional()
       .nullable()
       .transform((val) => (val === "" ? null : val)),
     person_description: z
       .string()
       .trim()
-      .max(5000, "Person description cannot exceed 5000 characters")
+      .max(1000, "Person description cannot exceed 1000 characters")
       .optional()
       .nullable()
       .transform((val) => (val === "" ? null : val)),

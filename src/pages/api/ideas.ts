@@ -107,8 +107,8 @@ export const GET: APIRoute = async (context) => {
  * - name: string (min 2, max 255)
  * - content: string (1..10000)
  * - age?: integer 1..500
- * - interests?: string (max 5000)
- * - person_description?: string (max 5000)
+ * - interests?: string (max 1000)
+ * - person_description?: string (max 1000)
  * - budget_min?: number >= 0
  * - budget_max?: number >= budget_min
  * - relation_id?: integer > 0
