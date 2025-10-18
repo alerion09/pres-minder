@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 import { idParamSchema } from "@/lib/validation/common-schemas";
 import { getIdeaById } from "@/lib/services/ideas/get-idea-by-id.service";
 import { parseAndValidateUpdateIdea, updateIdea } from "@/lib/services/ideas/update-idea.service";
+import { deleteIdeaById } from "@/lib/services/ideas/delete-idea.service";
 
 export const prerender = false;
 
@@ -63,7 +64,6 @@ export const GET: APIRoute = async (context) => {
   // 2. Fetch idea from database
   try {
     const idea = await getIdeaById(supabase, validatedId);
-
     if (!idea) {
       console.warn("[GET /api/ideas/:id] Idea not found:", {
         timestamp: new Date().toISOString(),
@@ -89,6 +89,111 @@ export const GET: APIRoute = async (context) => {
     });
   } catch (error) {
     console.error("[GET /api/ideas/:id] Database error:", {
+      timestamp: new Date().toISOString(),
+      route: context.url.pathname,
+      ideaId: validatedId,
+      error,
+    });
+
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "X-Content-Type-Options": "nosniff",
+      },
+    });
+  }
+};
+
+/**
+ * DELETE /api/ideas/:id
+ *
+ * Deletes a gift idea by ID.
+ * Note: Currently no authentication required.
+ *
+ * @param id - Idea ID (positive integer)
+ *
+ * @returns 200 - Success with message
+ * @returns 400 - Invalid id parameter
+ * @returns 404 - Idea not found
+ * @returns 500 - Internal server error
+ */
+export const DELETE: APIRoute = async (context) => {
+  const supabase = context.locals.supabase;
+
+  // 1. Validate ID parameter
+  let validatedId: number;
+  try {
+    validatedId = idParamSchema.parse(context.params.id);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      console.warn("[DELETE /api/ideas/:id] Invalid id parameter:", {
+        timestamp: new Date().toISOString(),
+        route: context.url.pathname,
+        paramId: context.params.id,
+        details: error.errors.map((err) => `${err.path.join(".")}: ${err.message}`),
+      });
+
+      return new Response(JSON.stringify({ error: "Invalid id" }), {
+        status: 400,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "X-Content-Type-Options": "nosniff",
+        },
+      });
+    }
+
+    // Unexpected validation error
+    console.error("[DELETE /api/ideas/:id] Unexpected validation error:", {
+      timestamp: new Date().toISOString(),
+      route: context.url.pathname,
+      error,
+    });
+
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "X-Content-Type-Options": "nosniff",
+      },
+    });
+  }
+
+  // 2. Delete idea from database
+  try {
+    const deleted = await deleteIdeaById(supabase, validatedId);
+
+    if (!deleted) {
+      console.warn("[DELETE /api/ideas/:id] Idea not found:", {
+        timestamp: new Date().toISOString(),
+        route: context.url.pathname,
+        ideaId: validatedId,
+      });
+
+      return new Response(JSON.stringify({ error: "Idea not found" }), {
+        status: 404,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "X-Content-Type-Options": "nosniff",
+        },
+      });
+    }
+
+    console.log("[DELETE /api/ideas/:id] Idea deleted successfully:", {
+      timestamp: new Date().toISOString(),
+      route: context.url.pathname,
+      ideaId: validatedId,
+    });
+
+    return new Response(JSON.stringify({ message: "Idea deleted successfully" }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "X-Content-Type-Options": "nosniff",
+      },
+    });
+  } catch (error) {
+    console.error("[DELETE /api/ideas/:id] Database error:", {
       timestamp: new Date().toISOString(),
       route: context.url.pathname,
       ideaId: validatedId,
