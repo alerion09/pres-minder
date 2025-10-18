@@ -187,14 +187,18 @@ export async function updateIdea(
 
   if (hasNewBudgetMax && !hasNewBudgetMin && hasOldBudgetMin) {
     // Updating only budget_max, check against existing budget_min
-    if (command.budget_max! < existingIdea.budget_min!) {
+    const newMax = command.budget_max;
+    const currentMin = existingIdea.budget_min;
+    if (typeof newMax === "number" && typeof currentMin === "number" && newMax < currentMin) {
       throw new Error("VALIDATION_ERROR: Maximum budget must be greater than or equal to minimum budget");
     }
   }
 
   if (hasNewBudgetMin && !hasNewBudgetMax && hasOldBudgetMax) {
     // Updating only budget_min, check against existing budget_max
-    if (command.budget_min! > existingIdea.budget_max!) {
+    const newMin = command.budget_min;
+    const currentMax = existingIdea.budget_max;
+    if (typeof newMin === "number" && typeof currentMax === "number" && newMin > currentMax) {
       throw new Error("VALIDATION_ERROR: Minimum budget must be less than or equal to maximum budget");
     }
   }

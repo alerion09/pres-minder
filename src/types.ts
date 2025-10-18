@@ -123,29 +123,16 @@ export type CreateIdeaCommand = Omit<TablesInsert<"ideas">, "id" | "created_at" 
  * UpdateIdeaCommand - Request body for updating an existing idea
  * Used in PUT /api/ideas/:id
  *
- * Allows partial updates of user-editable fields only.
- * All fields except user_id are optional (partial update).
- *
- * Note: Currently requires user_id in body (no authentication).
- *
- * Excludes:
+ * Derived from TablesUpdate but excludes:
  * - id (URL parameter, not in body)
  * - created_at, updated_at (auto-managed by database)
  *
+ * Makes user_id required (no authentication currently).
+ * All other fields are optional (partial update).
  * Includes source field which is passed from the frontend to track content origin.
  */
-export type UpdateIdeaCommand = {
+export type UpdateIdeaCommand = Omit<TablesUpdate<"ideas">, "id" | "created_at" | "updated_at"> & {
   user_id: string;
-  name?: string;
-  content?: string;
-  age?: number | null;
-  interests?: string | null;
-  person_description?: string | null;
-  budget_min?: number | null;
-  budget_max?: number | null;
-  relation_id?: number | null;
-  occasion_id?: number | null;
-  source?: IdeaSource;
 };
 
 /**
