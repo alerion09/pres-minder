@@ -1,16 +1,5 @@
-import { z } from "zod";
 import type { supabaseClient } from "@/db/supabase.client";
 import type { IdeaDTO } from "@/types";
-
-// ============================================================================
-// Validation Schema
-// ============================================================================
-
-/**
- * Zod schema for validating idea ID parameter
- * Ensures ID is a positive integer
- */
-export const idParamSchema = z.coerce.number().int().positive();
 
 // ============================================================================
 // Database Query Functions
