@@ -1,0 +1,105 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import type { GetIdeasQueryParams, IdeaSource } from "@/types";
+
+export const prerender = false;
+
+// Parse query parameters
+const url = Astro.url;
+const page = parseInt(url.searchParams.get("page") || "1");
+const limit = parseInt(url.searchParams.get("limit") || "12");
+const sort = (url.searchParams.get("sort") as GetIdeasQueryParams["sort"]) || "created_at";
+const order = (url.searchParams.get("order") as GetIdeasQueryParams["order"]) || "desc";
+const relationId = url.searchParams.get("relation_id") ? parseInt(url.searchParams.get("relation_id")!) : undefined;
+const occasionId = url.searchParams.get("occasion_id") ? parseInt(url.searchParams.get("occasion_id")!) : undefined;
+const source = url.searchParams.get("source") as IdeaSource | undefined;
+
+// Fetch data from API
+const baseUrl = url.origin;
+
+// Build query string for ideas
+const ideasParams = new URLSearchParams({
+  page: page.toString(),
+  limit: limit.toString(),
+  sort,
+  order,
+});
+
+if (relationId) ideasParams.set("relation_id", relationId.toString());
+if (occasionId) ideasParams.set("occasion_id", occasionId.toString());
+if (source) ideasParams.set("source", source);
+
+// Fetch relations, occasions, and ideas in parallel
+const [relationsRes, occasionsRes, ideasRes] = await Promise.all([
+  fetch(`${baseUrl}/api/relations`),
+  fetch(`${baseUrl}/api/occasions`),
+  fetch(`${baseUrl}/api/ideas?${ideasParams.toString()}`),
+]);
+
+// Handle errors
+if (!relationsRes.ok || !occasionsRes.ok || !ideasRes.ok) {
+  throw new Error("Failed to fetch data");
+}
+
+const { data: relations } = await relationsRes.json();
+const { data: occasions } = await occasionsRes.json();
+const ideasData = await ideasRes.json();
+
+// Prepare initial state for client
+const initialState = {
+  ideas: ideasData.data || [],
+  pagination: ideasData.pagination,
+  relations,
+  occasions,
+  filters: {
+    page,
+    limit,
+    sort,
+    order,
+    relationId,
+    occasionId,
+    source,
+  },
+};
+---
+
+<Layout title="Moje pomysły">
+  <main class="container mx-auto px-4 py-8">
+    <header class="mb-8">
+      <h1 class="text-3xl font-bold mb-2">Moje pomysły</h1>
+      <p class="text-muted-foreground">Zarządzaj swoimi pomysłami na prezenty</p>
+    </header>
+
+    <div id="ideas-view" class="space-y-6">
+      <!-- Client-side React component will be mounted here -->
+      <div id="ideas-root" data-initial-state={JSON.stringify(initialState)}></div>
+    </div>
+  </main>
+
+  <script>
+    import { createElement } from "react";
+    import { createRoot } from "react-dom/client";
+    import { IdeasView } from "@/components/ideas/IdeasView";
+
+    // Get initial state from data attribute
+    const rootElement = document.getElementById("ideas-root");
+    if (rootElement) {
+      const initialStateStr = rootElement.getAttribute("data-initial-state");
+      if (initialStateStr) {
+        const initialState = JSON.parse(initialStateStr);
+
+        // Mount React component
+        const root = createRoot(rootElement);
+        root.render(
+          createElement(IdeasView, {
+            initialIdeas: initialState.ideas,
+            initialPagination: initialState.pagination,
+            initialFilters: initialState.filters,
+            relations: initialState.relations,
+            occasions: initialState.occasions,
+          })
+        );
+      }
+    }
+  </script>
+</Layout>
