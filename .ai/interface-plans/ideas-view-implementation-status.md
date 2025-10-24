@@ -123,35 +123,79 @@
 - Przekazanie initialState z danych SSR do React
 - Wykorzystanie createRoot i createElement z React 19
 
+### 11. Dialogi modalne ✅
+
+#### IdeaPreviewDialog ✅
+
+- **Plik**: `src/components/ideas/IdeaPreviewDialog.tsx`
+- Modal tylko do odczytu z pełnymi danymi pomysłu
+- Wyświetla: nazwę, badge źródła, relację, okazję, wiek, zainteresowania, opis osoby, budżet, treść pomysłu, metadane (daty utworzenia/edycji)
+- Funkcje pomocnicze: `formatBudget()` (zrefaktoryzowane z stałą `notSpecified`), `formatDate()`
+- Fokusowanie pierwszego elementu, zamykanie klawiszem Esc
+- Dostępność: `aria-describedby` dla opisu dialogu
+- **Poprawki**: Zrefaktoryzowano `formatBudget` - wydzielono "Nie określono" do stałej
+
+#### IdeaFormDialog ✅
+
+- **Plik**: `src/components/ideas/IdeaFormDialog.tsx`
+- Jeden modal obsługujący create i edit
+- Wszystkie pola formularza: nazwa*, treść*, wiek, zainteresowania, opis osoby, relacja, okazja, budżet min/max
+- Panel sugestii AI z przyciskami "Wygeneruj pomysły" i "Akceptuj"
+- Pełna walidacja klienta zgodnie z `CreateIdeaCommand`/`UpdateIdeaCommand`:
+  - Nazwa: 2-255 znaków (wymagane)
+  - Treść: 1-10000 znaków (wymagane)
+  - Wiek: liczba > 0 (opcjonalne)
+  - Budżet: min ≤ max (opcjonalne)
+  - Limity długości dla pól tekstowych (interests: 500, person_description: 1000)
+- Integracja z API:
+  - `POST /api/ideas` (create)
+  - `PUT /api/ideas/:id` (edit)
+  - `POST /api/ideas/generate` (AI suggestions)
+- Automatyczna zmiana source:
+  - ai → edited-ai po edycji treści
+  - manual gdy treść wpisana od zera
+  - ai gdy wybrano sugestię AI
+- Obsługa błędów: inline pod polami, fokus na pierwszym błędnym polu, komunikat submit na dole
+- Blokada przycisków podczas pending
+- Dostępność: pełne aria-labels, aria-invalid, aria-describedby
+- **Poprawki**:
+  - Naprawiono useEffect - zmieniono `else` na `else if (mode === "create")` aby nie resetować formularza gdy `mode === "edit" && !idea`
+  - Naprawiono Select components - usunięto `<SelectItem value="">`, zmieniono na `value={field || undefined}` dla kompatybilności z Shadcn/ui
+
+#### IdeaDeleteAlert ✅
+
+- **Plik**: `src/components/ideas/IdeaDeleteAlert.tsx`
+- AlertDialog z potwierdzeniem usunięcia
+- Przyciski: "Anuluj" i "Usuń" (destructive variant)
+- Integracja z `DELETE /api/ideas/:id`
+- Blokada przycisków podczas pending
+- Obsługa błędów: komunikat w dialogu z role="alert", aria-live="assertive"
+- Niemożliwość zamknięcia podczas pending
+- Reset błędu przy zamykaniu
+- **Poprawki**: Naprawiono Promise ignored - zmieniono onClick na `async (e) => { await handleDelete(); }`
+
+#### Integracja z IdeasView ✅
+
+- Zaktualizowano `src/components/ideas/IdeasView.tsx`
+- Dodano importy: `IdeaPreviewDialog`, `IdeaFormDialog`, `IdeaDeleteAlert`
+- Dodano state dla zarządzania dialogami:
+  - `ideas` - kopia initialIdeas do lokalnych aktualizacji
+  - `previewOpen`, `formOpen`, `deleteOpen` - kontrola widoczności dialogów
+  - `formMode: 'create' | 'edit'` - tryb formularza
+  - `selectedIdeaId` - ID aktualnie wybranego pomysłu
+- Zaimplementowano handlery:
+  - `handlePreview(id)` - ustawia selectedIdeaId i otwiera IdeaPreviewDialog
+  - `handleEdit(id)` - ustawia selectedIdeaId, formMode='edit', otwiera IdeaFormDialog
+  - `handleCreate()` - resetuje selectedIdeaId, formMode='create', otwiera IdeaFormDialog
+  - `handleDelete(id)` - ustawia selectedIdeaId, otwiera IdeaDeleteAlert
+  - `handleSaved(savedIdea)` - aktualizuje listę (dodaje nowy/modyfikuje istniejący) + reload strony
+  - `handleDeleted()` - usuwa z listy + reload strony
+- Dodano `selectedIdea = ideas.find(...)` dla przekazania do dialogów
+- Wszystkie 3 dialogi dodane na końcu JSX z przekazaniem odpowiednich props
+
 ## Kolejne kroki
 
 Zgodnie z planem implementacji (`ideas-view-implementation-plan.md`), pozostały do realizacji:
-
-### 7. IdeaPreviewDialog (TODO)
-
-- Modal tylko do odczytu z pełnymi danymi pomysłu
-- Komponenty: Dialog, tytuł, siatka pól, przycisk Close
-- Interakcje: otwórz/zamknij, fokusowanie pierwszego elementu, Esc zamyka
-- Props: `{ open: boolean, idea?: IdeaDTO, onOpenChange: (o: boolean) => void }`
-
-### 8. IdeaFormDialog - tworzenie/edycja (TODO)
-
-- Jeden modal dla create i edit
-- Pola formularza: nazwa, wiek, zainteresowania, relacja, okazja, budżet, opis, treść
-- Panel sugestii AI (lista 5 wyników z przyciskami "Akceptuj")
-- Walidacja klienta zgodnie z `CreateIdeaCommand` / `UpdateIdeaCommand`
-- Integracja z API: `POST /api/ideas` (create) lub `PUT /api/ideas/:id` (edit)
-- Obsługa zmiany source: ai → edited-ai po edycji, manual gdy wpisane od zera
-- Props: `{ open: boolean, mode: 'create'|'edit', idea?: IdeaDTO, relations: RelationDTO[], occasions: OccasionDTO[], onOpenChange, onSaved }`
-
-### 9. IdeaDeleteAlert (TODO)
-
-- AlertDialog z potwierdzeniem usunięcia
-- Przyciski: Usuń/Anuluj
-- Integracja z `DELETE /api/ideas/:id`
-- Blokada przycisków podczas pending
-- Obsługa przypadku brzegowego: ostatni element na stronie → cofnij page o 1
-- Props: `{ open: boolean, ideaId: number, onOpenChange, onDeleted: () => void }`
 
 ### 10. Błędy i toasty (TODO)
 
@@ -192,7 +236,10 @@ src/
 │       ├── IdeaCardSkeleton.tsx           # Szkielet karty
 │       ├── EmptyState.tsx                 # Pusty stan
 │       ├── IdeasPagination.tsx            # Paginacja
-│       └── IdeasView.tsx                  # Główny komponent
+│       ├── IdeaPreviewDialog.tsx          # Modal podglądu pomysłu (nowy)
+│       ├── IdeaFormDialog.tsx             # Modal tworzenia/edycji z AI (nowy)
+│       ├── IdeaDeleteAlert.tsx            # Alert potwierdzenia usunięcia (nowy)
+│       └── IdeasView.tsx                  # Główny komponent (zaktualizowany)
 ├── hooks/
 │   └── useQueryStateSync.ts               # Hook synchronizacji z URL
 └── lib/
@@ -207,6 +254,11 @@ src/
 1. **FilterBar**: Zaimplementowano funkcję `hasActiveFilters()` porównującą ze stałą `DEFAULT_FILTERS` zamiast wyliczania każdej opcji oddzielnie
 2. **FilterControls**: Zrefaktoryzowano do generycznego podejścia z konfiguracją `FILTER_CONFIGS`, eliminując powtarzalny kod
 3. **Hooks**: Przeniesiono folder `hooks` na poziom `src/hooks` (zamiast `src/components/hooks`)
+4. **IdeaPreviewDialog**: Zrefaktoryzowano `formatBudget` - wydzielono "Nie określono" do stałej `notSpecified`
+5. **IdeaDeleteAlert**: Naprawiono Promise ignored - zmieniono onClick na async z await
+6. **IdeaFormDialog**:
+   - Naprawiono useEffect resetujący formularz w trybie edit - zmieniono `else` na `else if (mode === "create")`
+   - Naprawiono błąd Select z pustym stringiem - usunięto `<SelectItem value="">`, zmieniono na `value={field || undefined}`
 
 ### Dostępność (a11y)
 
@@ -230,3 +282,33 @@ src/
 - Tailwind CSS dla stylowania
 - Shadcn/ui dla komponentów UI
 - TypeScript dla bezpieczeństwa typów
+- Pełna dostępność (ARIA attributes)
+- Obsługa błędów z early returns
+- Walidacja danych przed wysłaniem do API
+
+### Napotkane problemy i rozwiązania
+
+1. **Promise ignored w IdeaDeleteAlert**
+   - Problem: handler onClick nie obsługiwał async funkcji
+   - Rozwiązanie: zmiana na `async (e) => { await handleDelete(); }`
+
+2. **Dialog edycji się nie otwierał**
+   - Problem: useEffect resetował formularz gdy `mode === "edit" && !idea`
+   - Rozwiązanie: zmiana `else` na `else if (mode === "create")`
+
+3. **Błąd Select z pustym stringiem**
+   - Problem: Shadcn/ui nie pozwala na `<SelectItem value="">`
+   - Błąd: "A <Select.Item /> must have a value prop that is not an empty string"
+   - Rozwiązanie: usunięcie opcji "Nie wybrano", zmiana `value={field}` na `value={field || undefined}`
+
+4. **Duplikacja kodu w formatBudget**
+   - Problem: string "Nie określono" powtarzany 2 razy
+   - Rozwiązanie: wydzielenie do stałej `notSpecified`
+
+### Build i weryfikacja
+
+- **Build status**: ✅ Sukces
+- **Bundle size**: IdeasView ~146 kB (gzip: 46 kB)
+- **Build time**: ~1.3s
+- **TypeScript**: Brak błędów typów
+- **Linter**: Brak problemów

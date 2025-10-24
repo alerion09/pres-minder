@@ -3,6 +3,9 @@ import { useQueryStateSync } from "@/hooks/useQueryStateSync";
 import { FilterBar } from "./FilterBar";
 import { IdeasGrid } from "./IdeasGrid";
 import { IdeasPagination } from "./IdeasPagination";
+import { IdeaPreviewDialog } from "./IdeaPreviewDialog";
+import { IdeaFormDialog } from "./IdeaFormDialog";
+import { IdeaDeleteAlert } from "./IdeaDeleteAlert";
 import type { IdeaDTO, RelationDTO, OccasionDTO, PaginationMetaDTO } from "@/types";
 import type { FilterStateVM, FilterOptionsVM } from "@/lib/types/ideas-view.types";
 
@@ -39,32 +42,57 @@ function prepareFilterOptions(relations: RelationDTO[], occasions: OccasionDTO[]
 }
 
 export function IdeasView({ initialIdeas, initialPagination, initialFilters, relations, occasions }: IdeasViewProps) {
+  const [ideas, setIdeas] = useState<IdeaDTO[]>(initialIdeas);
   const [selectedIdeaId, setSelectedIdeaId] = useState<number | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [formMode, setFormMode] = useState<"create" | "edit">("create");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
   const { filters, updateFilters, resetFilters, isUpdating } = useQueryStateSync(initialFilters);
 
   const filterOptions = prepareFilterOptions(relations, occasions);
+  const selectedIdea = ideas.find((idea) => idea.id === selectedIdeaId);
 
   const handlePreview = (id: number) => {
     setSelectedIdeaId(id);
-    // TODO: Open preview dialog
-    console.log("Preview idea:", id);
+    setPreviewOpen(true);
   };
 
   const handleEdit = (id: number) => {
     setSelectedIdeaId(id);
-    // TODO: Open edit dialog
-    console.log("Edit idea:", id);
+    setFormMode("edit");
+    setFormOpen(true);
   };
 
   const handleDelete = (id: number) => {
     setSelectedIdeaId(id);
-    // TODO: Open delete confirmation
-    console.log("Delete idea:", id);
+    setDeleteOpen(true);
   };
 
   const handleCreate = () => {
-    // TODO: Open create dialog
-    console.log("Create new idea");
+    setSelectedIdeaId(null);
+    setFormMode("create");
+    setFormOpen(true);
+  };
+
+  const handleSaved = (savedIdea: IdeaDTO) => {
+    if (formMode === "create") {
+      // Dodaj nowy pomysł na początek listy
+      setIdeas((prev) => [savedIdea, ...prev]);
+    } else {
+      // Zaktualizuj istniejący pomysł
+      setIdeas((prev) => prev.map((idea) => (idea.id === savedIdea.id ? savedIdea : idea)));
+    }
+    // Odśwież stronę aby zsynchronizować z serwerem
+    window.location.reload();
+  };
+
+  const handleDeleted = () => {
+    // Usuń pomysł z listy
+    setIdeas((prev) => prev.filter((idea) => idea.id !== selectedIdeaId));
+    // Odśwież stronę aby zsynchronizować z serwerem
+    window.location.reload();
   };
 
   const handlePageChange = (page: number) => {
@@ -84,7 +112,7 @@ export function IdeasView({ initialIdeas, initialPagination, initialFilters, rel
       />
 
       <IdeasGrid
-        ideas={initialIdeas}
+        ideas={ideas}
         isLoading={isUpdating}
         onPreview={handlePreview}
         onEdit={handleEdit}
@@ -95,7 +123,25 @@ export function IdeasView({ initialIdeas, initialPagination, initialFilters, rel
 
       <IdeasPagination pagination={initialPagination} onPageChange={handlePageChange} />
 
-      {/* TODO: Add dialogs for preview, edit, delete, create */}
+      {/* Dialogs */}
+      <IdeaPreviewDialog open={previewOpen} idea={selectedIdea} onOpenChange={setPreviewOpen} />
+
+      <IdeaFormDialog
+        open={formOpen}
+        mode={formMode}
+        idea={formMode === "edit" ? selectedIdea : undefined}
+        relations={relations}
+        occasions={occasions}
+        onOpenChange={setFormOpen}
+        onSaved={handleSaved}
+      />
+
+      <IdeaDeleteAlert
+        open={deleteOpen}
+        ideaId={selectedIdeaId ?? 0}
+        onOpenChange={setDeleteOpen}
+        onDeleted={handleDeleted}
+      />
     </div>
   );
 }
