@@ -1,5 +1,6 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import { IdeasView } from "@/components/ideas/IdeasView";
 import type { GetIdeasQueryParams, IdeaSource } from "@/types";
 
 export const prerender = false;
@@ -70,36 +71,15 @@ const initialState = {
       <p class="text-muted-foreground">Zarządzaj swoimi pomysłami na prezenty</p>
     </header>
 
-    <div id="ideas-view" class="space-y-6">
-      <!-- Client-side React component will be mounted here -->
-      <div id="ideas-root" data-initial-state={JSON.stringify(initialState)}></div>
+    <div class="space-y-6">
+      <IdeasView
+        client:load
+        initialIdeas={initialState.ideas}
+        initialPagination={initialState.pagination}
+        initialFilters={initialState.filters}
+        relations={initialState.relations}
+        occasions={initialState.occasions}
+      />
     </div>
   </main>
-
-  <script>
-    import { createElement } from "react";
-    import { createRoot } from "react-dom/client";
-    import { IdeasView } from "@/components/ideas/IdeasView";
-
-    // Get initial state from data attribute
-    const rootElement = document.getElementById("ideas-root");
-    if (rootElement) {
-      const initialStateStr = rootElement.getAttribute("data-initial-state");
-      if (initialStateStr) {
-        const initialState = JSON.parse(initialStateStr);
-
-        // Mount React component
-        const root = createRoot(rootElement);
-        root.render(
-          createElement(IdeasView, {
-            initialIdeas: initialState.ideas,
-            initialPagination: initialState.pagination,
-            initialFilters: initialState.filters,
-            relations: initialState.relations,
-            occasions: initialState.occasions,
-          })
-        );
-      }
-    }
-  </script>
 </Layout>

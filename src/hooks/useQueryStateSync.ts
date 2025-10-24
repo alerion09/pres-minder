@@ -1,13 +1,15 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { navigate } from "astro:transitions/client";
 import type { FilterStateVM } from "@/lib/types/ideas-view.types";
 
 /**
  * Custom hook for synchronizing state with URL query parameters
- * Provides debounced updates to prevent excessive history entries
+ * Uses Astro View Transitions for seamless navigation and SSR data reload
  */
 export function useQueryStateSync(initialFilters: FilterStateVM) {
   const [filters, setFilters] = useState<FilterStateVM>(initialFilters);
   const [isUpdating, setIsUpdating] = useState(false);
+  const isInitialMount = useRef(true);
 
   /**
    * Update filters and sync with URL
@@ -41,9 +43,15 @@ export function useQueryStateSync(initialFilters: FilterStateVM) {
   }, [initialFilters.limit]);
 
   /**
-   * Sync filters with URL query params
+   * Sync filters with URL query params using Astro View Transitions
    */
   useEffect(() => {
+    // Skip navigation on initial mount - we already have the correct URL from SSR
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
     const params = new URLSearchParams();
 
     params.set("page", filters.page.toString());
@@ -63,13 +71,18 @@ export function useQueryStateSync(initialFilters: FilterStateVM) {
       params.set("source", filters.source);
     }
 
-    // Update URL without page reload
     const newUrl = `${window.location.pathname}?${params.toString()}`;
-    window.history.pushState({}, "", newUrl);
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
 
-    // Trigger page reload to fetch new data from server
-    setIsUpdating(true);
-    window.location.href = newUrl;
+    // Only navigate if URL actually changed
+    if (newUrl !== currentUrl) {
+      setIsUpdating(true);
+
+      // Use Astro's navigate for smooth transitions with SSR data reload
+      navigate(newUrl).finally(() => {
+        setIsUpdating(false);
+      });
+    }
   }, [filters]);
 
   return {

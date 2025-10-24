@@ -40,7 +40,6 @@ function prepareFilterOptions(relations: RelationDTO[], occasions: OccasionDTO[]
 
 export function IdeasView({ initialIdeas, initialPagination, initialFilters, relations, occasions }: IdeasViewProps) {
   const [selectedIdeaId, setSelectedIdeaId] = useState<number | null>(null);
-
   const { filters, updateFilters, resetFilters, isUpdating } = useQueryStateSync(initialFilters);
 
   const filterOptions = prepareFilterOptions(relations, occasions);
