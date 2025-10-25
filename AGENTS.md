@@ -99,6 +99,11 @@ Use `supabase db reset` to apply migrations. Generate new types after schema cha
 - Implement proper error logging and user-friendly error messages.
 - Consider using custom error types or error factories for consistent error handling.
 
+## Privacy & Secrets
+
+- Do not read, open, edit, delete, and parse files matching `**/.env` or `**/.env.*`.
+- Do not copy or surface contents of any environment files.
+
 # Guidelines for React
 
 - Use functional components with hooks instead of class components
