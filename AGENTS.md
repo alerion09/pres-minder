@@ -108,7 +108,7 @@ Use `supabase db reset` to apply migrations. Generate new types after schema cha
 
 - Use functional components with hooks instead of class components
 - Never use "use client" and other Next.js directives as we use React with Astro
-- Extract logic into custom hooks in `src/components/hooks`
+- Extract logic into custom hooks in `src/hooks`
 - Implement React.memo() for expensive components that render often with the same props
 - Utilize React.lazy() and Suspense for code-splitting and performance optimization
 - Use the useCallback hook for event handlers passed to child components to prevent unnecessary re-renders
