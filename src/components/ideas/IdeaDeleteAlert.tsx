@@ -9,6 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { showSuccessToast, showErrorToast } from "@/lib/utils/toast-helpers";
 
 interface IdeaDeleteAlertProps {
   open: boolean;
@@ -19,11 +20,9 @@ interface IdeaDeleteAlertProps {
 
 export function IdeaDeleteAlert({ open, ideaId, onOpenChange, onDeleted }: IdeaDeleteAlertProps) {
   const [isPending, setIsPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async () => {
     setIsPending(true);
-    setError(null);
 
     try {
       const response = await fetch(`/api/ideas/${ideaId}`, {
@@ -35,15 +34,18 @@ export function IdeaDeleteAlert({ open, ideaId, onOpenChange, onDeleted }: IdeaD
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+        console.error("[IdeaDeleteAlert] Delete error:", { status: response.status, error: data });
+        showErrorToast(data.error || "Nie udało się usunąć pomysłu");
+        return;
       }
 
-      // Sukces - zamknij dialog i wywołaj callback
+      // Sukces - zamknij dialog, pokaż toast i wywołaj callback
+      showSuccessToast("Pomysł został usunięty");
       onOpenChange(false);
       onDeleted();
     } catch (err) {
       console.error("[IdeaDeleteAlert] Delete error:", err);
-      setError(err instanceof Error ? err.message : "Nie udało się usunąć pomysłu");
+      showErrorToast("Wystąpił błąd podczas usuwania pomysłu");
     } finally {
       setIsPending(false);
     }
@@ -52,11 +54,6 @@ export function IdeaDeleteAlert({ open, ideaId, onOpenChange, onDeleted }: IdeaD
   const handleOpenChange = (newOpen: boolean) => {
     // Nie pozwalaj zamknąć podczas pending
     if (isPending) return;
-
-    // Reset błędu przy zamykaniu
-    if (!newOpen) {
-      setError(null);
-    }
 
     onOpenChange(newOpen);
   };
@@ -70,12 +67,6 @@ export function IdeaDeleteAlert({ open, ideaId, onOpenChange, onDeleted }: IdeaD
             Ta operacja jest nieodwracalna. Pomysł zostanie trwale usunięty z bazy danych.
           </AlertDialogDescription>
         </AlertDialogHeader>
-
-        {error && (
-          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive" role="alert" aria-live="assertive">
-            {error}
-          </div>
-        )}
 
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Anuluj</AlertDialogCancel>

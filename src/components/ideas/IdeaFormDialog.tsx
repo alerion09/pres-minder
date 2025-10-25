@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
+import { showSuccessToast, showErrorToast } from "@/lib/utils/toast-helpers";
 import type {
   IdeaDTO,
   RelationDTO,
@@ -205,10 +206,13 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
 
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
-          throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+          console.error("[IdeaFormDialog] Create error:", { status: response.status, error: data });
+          showErrorToast(data.error || "Nie udało się dodać pomysłu");
+          return;
         }
 
         const result = await response.json();
+        showSuccessToast("Pomysł został dodany pomyślnie");
         onSaved(result.data);
       } else {
         // PUT /api/ideas/:id
@@ -234,19 +238,20 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
 
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
-          throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+          console.error("[IdeaFormDialog] Update error:", { status: response.status, error: data });
+          showErrorToast(data.error || "Nie udało się zaktualizować pomysłu");
+          return;
         }
 
         const result = await response.json();
+        showSuccessToast("Pomysł został zaktualizowany pomyślnie");
         onSaved(result.data);
       }
 
       onOpenChange(false);
     } catch (err) {
-      console.error(`[IdeaFormDialog] ${mode} error:`, err);
-      setErrors({
-        submit: err instanceof Error ? err.message : "Nie udało się zapisać pomysłu",
-      });
+      console.error("[IdeaFormDialog] Submit error:", err);
+      showErrorToast("Wystąpił błąd podczas zapisywania pomysłu");
     } finally {
       setIsPending(false);
     }
@@ -254,7 +259,6 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
 
   const handleGenerateAI = async () => {
     setIsGenerating(true);
-    setErrors({});
 
     try {
       const command: GenerateIdeaCommand = {
@@ -275,16 +279,17 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+        console.error("[IdeaFormDialog] Generate AI error:", { status: response.status, error: data });
+        showErrorToast(data.error || "Nie udało się wygenerować pomysłów");
+        return;
       }
 
       const result: GenerateIdeaResponseDTO = await response.json();
       setAiSuggestions(result.suggestions.map((s) => s.content));
+      showSuccessToast("Wygenerowano propozycje pomysłów");
     } catch (err) {
       console.error("[IdeaFormDialog] Generate AI error:", err);
-      setErrors({
-        ai: err instanceof Error ? err.message : "Nie udało się wygenerować sugestii AI",
-      });
+      showErrorToast("Wystąpił błąd podczas generowania pomysłów");
     } finally {
       setIsGenerating(false);
     }
@@ -495,12 +500,6 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
               </Button>
             </div>
 
-            {errors.ai && (
-              <p className="text-sm text-destructive" role="alert">
-                {errors.ai}
-              </p>
-            )}
-
             {aiSuggestions.length > 0 && (
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">Kliknij na pomysł, aby go użyć:</p>
@@ -540,17 +539,6 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
               </p>
             )}
           </div>
-
-          {/* Błąd submita */}
-          {errors.submit && (
-            <div
-              className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
-              role="alert"
-              aria-live="assertive"
-            >
-              {errors.submit}
-            </div>
-          )}
 
           {/* Footer */}
           <DialogFooter>
