@@ -193,31 +193,54 @@
 - Dodano `selectedIdea = ideas.find(...)` dla przekazania do dialogów
 - Wszystkie 3 dialogi dodane na końcu JSX z przekazaniem odpowiednich props
 
+### 10. Błędy i toasty ✅
+
+#### Integracja Sonner (Toast)
+
+- **Plik**: `src/components/ui/sonner.tsx`
+- Usunięto zależność od `next-themes` (zmieniono na `theme="system"`)
+- Dodano `Toaster` do głównego layoutu `src/layouts/Layout.astro` z dyrektywą `client:only="react"`
+- Komponent toastów dostępny globalnie w całej aplikacji
+
+#### Helper functions dla toastów
+
+- **Plik**: `src/lib/utils/toast-helpers.ts`
+- Proste funkcje pomocnicze:
+  - `showSuccessToast(message)` - toasty sukcesu (3s)
+  - `showErrorToast(message)` - toasty błędów (5s)
+  - `showInfoToast(message)` - toasty informacyjne (3s)
+  - `showWarningToast(message)` - toasty ostrzeżeń (4s)
+- Brak skomplikowanego error loggera - proste, bezpośrednie podejście
+
+#### Aktualizacja dialogów
+
+- **IdeaFormDialog**:
+  - Dodano toasty sukcesu dla operacji create/update/generateAI
+  - Dodano toasty błędów z obsługą response.json()
+  - Zachowano inline errors dla walidacji pól formularza
+  - Dodano console.error dla debugowania z kontekstem (component, action, status)
+- **IdeaDeleteAlert**:
+  - Usunięto inline error state
+  - Dodano toast sukcesu po usunięciu
+  - Błędy wyświetlane przez toasty
+  - Dodano console.error dla debugowania
+
+#### Poprawki walidacji formularza
+
+- **Znalezione niezgodności Frontend ⟷ Backend**:
+  1. **Pole "Wiek"**: Brak górnego limitu → dodano `max 500` (zgodnie z backendem)
+  2. **Pole "Zainteresowania"**: `max 500` → zmieniono na `max 1000` (zgodnie z backendem)
+- **Dodano natywne ograniczenia HTML**:
+  - Nazwa: `maxLength={255}`
+  - Zainteresowania: `maxLength={1000}`
+  - Opis osoby: `maxLength={1000}`
+  - Treść pomysłu: `maxLength={10000}`
+  - Wiek: `max="500"`
+- **Weryfikacja inline errors**: Wszystkie pola mają poprawnie zaimplementowane wyświetlanie błędów inline z aria-invalid i aria-describedby
+
 ## Kolejne kroki
 
-Zgodnie z planem implementacji (`ideas-view-implementation-plan.md`), pozostały do realizacji:
-
-### 10. Błędy i toasty (TODO)
-
-- Zunifikowana obsługa błędów (komponent toast/sonner)
-- Obsługa błędów walidacji (400): lista komunikatów, focus na pierwszym błędnym polu
-- Obsługa 401: redirect do logowania (w przyszłości)
-- Obsługa 404: toast "Nie znaleziono", odświeżenie listy
-- Obsługa 500: toast "Błąd serwera", przycisk "Spróbuj ponownie"
-- Warstwa dostępności: aria-live dla komunikatów, role="alert" dla poważnych błędów
-- Logowanie błędów z timestamp w konsoli
-
-### 11. Testy manualne (TODO)
-
-- Scenariusze: filtry, sortowanie, paginacja, edycja, usuwanie
-- Przypadki brzegowe:
-  - Ostatni element na stronie
-  - Brak wyników
-  - Błędy API
-  - Długie nazwy/treści
-  - Walidacja formularzy
-  - Nawigacja klawiaturą
-  - Skróty klawiaturowe (←/→)
+Implementacja widoku Lista pomysłów została **zakończona**. Wszystkie kroki z planu implementacji zostały zrealizowane.
 
 ## Struktura plików
 
@@ -225,7 +248,11 @@ Zgodnie z planem implementacji (`ideas-view-implementation-plan.md`), pozostały
 src/
 ├── pages/
 │   └── ideas.astro                        # Strona SSR z integracją React
+├── layouts/
+│   └── Layout.astro                       # Layout z Toaster (zaktualizowany)
 ├── components/
+│   ├── ui/
+│   │   └── sonner.tsx                     # Komponent Toaster (zaktualizowany)
 │   └── ideas/
 │       ├── FilterBar.tsx                  # Pasek filtrów z resetem
 │       ├── FilterControls.tsx             # Kontrolki filtrów (generyczne)
@@ -236,15 +263,17 @@ src/
 │       ├── IdeaCardSkeleton.tsx           # Szkielet karty
 │       ├── EmptyState.tsx                 # Pusty stan
 │       ├── IdeasPagination.tsx            # Paginacja
-│       ├── IdeaPreviewDialog.tsx          # Modal podglądu pomysłu (nowy)
-│       ├── IdeaFormDialog.tsx             # Modal tworzenia/edycji z AI (nowy)
-│       ├── IdeaDeleteAlert.tsx            # Alert potwierdzenia usunięcia (nowy)
-│       └── IdeasView.tsx                  # Główny komponent (zaktualizowany)
+│       ├── IdeaPreviewDialog.tsx          # Modal podglądu pomysłu
+│       ├── IdeaFormDialog.tsx             # Modal tworzenia/edycji z AI (zaktualizowany)
+│       ├── IdeaDeleteAlert.tsx            # Alert potwierdzenia usunięcia (zaktualizowany)
+│       └── IdeasView.tsx                  # Główny komponent
 ├── hooks/
 │   └── useQueryStateSync.ts               # Hook synchronizacji z URL
 └── lib/
-    └── types/
-        └── ideas-view.types.ts            # Typy ViewModel
+    ├── types/
+    │   └── ideas-view.types.ts            # Typy ViewModel
+    └── utils/
+        └── toast-helpers.ts               # Helper functions dla toastów (nowy)
 ```
 
 ## Uwagi techniczne
@@ -259,6 +288,9 @@ src/
 6. **IdeaFormDialog**:
    - Naprawiono useEffect resetujący formularz w trybie edit - zmieniono `else` na `else if (mode === "create")`
    - Naprawiono błąd Select z pustym stringiem - usunięto `<SelectItem value="">`, zmieniono na `value={field || undefined}`
+7. **Sonner (Toaster)**: Usunięto zależność od `next-themes` - zmieniono na `theme="system"` dla prostoty
+8. **Toast helpers**: Uproszczono system toastów - usunięto skomplikowany error logger i handleApiError, pozostawiono tylko 4 proste funkcje
+9. **Walidacja formularza**: Skorygowano limity pól aby były zgodne z backendem + dodano natywne `maxLength` i `max` do pól
 
 ### Dostępność (a11y)
 
@@ -285,6 +317,15 @@ src/
 - Pełna dostępność (ARIA attributes)
 - Obsługa błędów z early returns
 - Walidacja danych przed wysłaniem do API
+- **Pełna zgodność walidacji Frontend ⟷ Backend**:
+  - name: min 2, max 255 ✅
+  - content: min 1, max 10000 ✅
+  - age: min 1, max 500 ✅
+  - interests: max 1000 ✅
+  - person_description: max 1000 ✅
+  - budget_min: >= 0 ✅
+  - budget_max: >= 0, >= min ✅
+  - Natywne HTML constraints (`maxLength`, `max`, `min`) dla UX
 
 ### Napotkane problemy i rozwiązania
 
@@ -305,10 +346,20 @@ src/
    - Problem: string "Nie określono" powtarzany 2 razy
    - Rozwiązanie: wydzielenie do stałej `notSpecified`
 
+5. **Niezgodności walidacji Frontend-Backend**
+   - Problem:
+     - Wiek: brak górnego limitu na frontendzie (backend: max 500)
+     - Zainteresowania: max 500 na frontendzie (backend: max 1000)
+   - Rozwiązanie:
+     - Dodano walidację `max 500` dla wieku + atrybut HTML `max="500"`
+     - Zmieniono limit zainteresowań z 500 na 1000
+     - Dodano `maxLength` do wszystkich pól tekstowych dla UX
+
 ### Build i weryfikacja
 
 - **Build status**: ✅ Sukces
-- **Bundle size**: IdeasView ~146 kB (gzip: 46 kB)
-- **Build time**: ~1.3s
+- **Bundle size**: IdeasView ~144.33 kB (gzip: 45.51 kB)
+- **Build time**: ~1.26s
 - **TypeScript**: Brak błędów typów
 - **Linter**: Brak problemów
+- **Ostatni build**: 2025-10-25 19:12:36

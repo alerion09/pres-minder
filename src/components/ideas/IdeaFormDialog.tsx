@@ -100,7 +100,7 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
     }
   }, [open, mode, idea]);
 
-  const validateForm = (): boolean => {
+  const validateForm = (): FormErrors => {
     const newErrors: FormErrors = {};
 
     // Walidacja nazwy (wymagane, 2-255 znaków)
@@ -119,9 +119,14 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
       newErrors.content = "Treść może mieć maksymalnie 10000 znaków";
     }
 
-    // Walidacja wieku (opcjonalne, > 0)
-    if (formData.age && (isNaN(Number(formData.age)) || Number(formData.age) <= 0)) {
-      newErrors.age = "Wiek musi być liczbą większą od 0";
+    // Walidacja wieku (opcjonalne, 1-500)
+    if (formData.age) {
+      const age = Number(formData.age);
+      if (isNaN(age) || age < 1) {
+        newErrors.age = "Liczba lat musi być większa od 0";
+      } else if (age > 500) {
+        newErrors.age = "Wiek nie może przekraczać 500 lat";
+      }
     }
 
     // Walidacja budżetu
@@ -129,11 +134,11 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
     const budgetMax = formData.budget_max ? Number(formData.budget_max) : null;
 
     if (formData.budget_min && (isNaN(budgetMin!) || budgetMin! < 0)) {
-      newErrors.budget_min = "Minimalny budżet musi być liczbą >= 0";
+      newErrors.budget_min = "Minimalny budżet musi być liczbą większą lub równą 0";
     }
 
     if (formData.budget_max && (isNaN(budgetMax!) || budgetMax! < 0)) {
-      newErrors.budget_max = "Maksymalny budżet musi być liczbą >= 0";
+      newErrors.budget_max = "Maksymalny budżet musi być liczbą większą lub równą 0";
     }
 
     if (budgetMin !== null && budgetMax !== null && budgetMin > budgetMax) {
@@ -141,8 +146,8 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
     }
 
     // Walidacja długości pól tekstowych
-    if (formData.interests && formData.interests.length > 500) {
-      newErrors.interests = "Zainteresowania mogą mieć maksymalnie 500 znaków";
+    if (formData.interests && formData.interests.length > 1000) {
+      newErrors.interests = "Zainteresowania mogą mieć maksymalnie 1000 znaków";
     }
 
     if (formData.person_description && formData.person_description.length > 1000) {
@@ -150,7 +155,7 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return newErrors;
   };
 
   const determineSource = (): IdeaSource => {
@@ -170,9 +175,10 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
       // Fokus na pierwszym błędnym polu
-      const firstErrorField = Object.keys(errors)[0];
+      const firstErrorField = Object.keys(validationErrors)[0];
       document.getElementById(firstErrorField)?.focus();
       return;
     }
@@ -319,7 +325,7 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
           <DialogTitle>{mode === "create" ? "Dodaj nowy pomysł" : "Edytuj pomysł"}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} noValidate className="space-y-6">
           {/* Nazwa */}
           <div className="space-y-2">
             <Label htmlFor="name">
@@ -330,6 +336,7 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
               value={formData.name}
               onChange={(e) => handleFieldChange("name", e.target.value)}
               placeholder="np. Książka o astronomii"
+              maxLength={255}
               disabled={isPending}
               aria-invalid={!!errors.name}
               aria-describedby={errors.name ? "name-error" : undefined}
@@ -389,6 +396,7 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
                 id="age"
                 type="number"
                 min="1"
+                max="500"
                 value={formData.age}
                 onChange={(e) => handleFieldChange("age", e.target.value)}
                 placeholder="np. 30"
@@ -410,6 +418,7 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
                 value={formData.interests}
                 onChange={(e) => handleFieldChange("interests", e.target.value)}
                 placeholder="np. Sport, muzyka, książki"
+                maxLength={1000}
                 disabled={isPending}
                 aria-invalid={!!errors.interests}
                 aria-describedby={errors.interests ? "interests-error" : undefined}
@@ -431,6 +440,7 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
               onChange={(e) => handleFieldChange("person_description", e.target.value)}
               placeholder="Dodatkowe informacje o osobie obdarowywanej..."
               rows={3}
+              maxLength={1000}
               disabled={isPending}
               aria-invalid={!!errors.person_description}
               aria-describedby={errors.person_description ? "person_description-error" : undefined}
@@ -529,6 +539,7 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
               onChange={(e) => handleFieldChange("content", e.target.value)}
               placeholder="Opisz swój pomysł na prezent..."
               rows={5}
+              maxLength={10000}
               disabled={isPending}
               aria-invalid={!!errors.content}
               aria-describedby={errors.content ? "content-error" : undefined}
