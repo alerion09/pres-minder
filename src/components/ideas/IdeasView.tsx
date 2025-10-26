@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQueryStateSync } from "@/hooks/useQueryStateSync";
+import { IdeasHeader } from "./IdeasHeader";
 import { FilterBar } from "./FilterBar";
 import { IdeasGrid } from "./IdeasGrid";
 import { IdeasPagination } from "./IdeasPagination";
@@ -111,6 +112,8 @@ export function IdeasView({
 
   return (
     <div className="space-y-6">
+      <IdeasHeader onCreate={handleCreate} />
+
       <FilterBar
         value={filters}
         options={filterOptions}
