@@ -114,7 +114,8 @@ export function IdeasView({
       <FilterBar
         value={filters}
         options={filterOptions}
-        pagination={initialPagination}
+        results={ideas?.length || 0}
+        totalResults={initialPagination?.total}
         onChange={updateFilters}
         onReset={resetFilters}
       />

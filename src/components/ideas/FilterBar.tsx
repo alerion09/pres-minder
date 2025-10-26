@@ -2,12 +2,12 @@ import { Button } from "@/components/ui/button";
 import { FilterControls } from "./FilterControls";
 import { ResultsCount } from "./ResultsCount";
 import type { FilterStateVM, FilterOptionsVM } from "@/lib/types/ideas-view.types";
-import type { PaginationMetaDTO } from "@/types";
 
 interface FilterBarProps {
   value: FilterStateVM;
   options: FilterOptionsVM;
-  pagination: PaginationMetaDTO;
+  results: number;
+  totalResults: number;
   onChange: (updates: Partial<FilterStateVM>) => void;
   onReset: () => void;
 }
@@ -30,23 +30,26 @@ function hasActiveFilters(filters: FilterStateVM): boolean {
   );
 }
 
-export function FilterBar({ value, options, pagination, onChange, onReset }: FilterBarProps) {
+export function FilterBar({ value, options, results, totalResults, onChange, onReset }: FilterBarProps) {
   const showResetButton = hasActiveFilters(value);
+  const resultsCount = <ResultsCount results={results} totalResults={totalResults} />;
 
   return (
     <div className="space-y-4 p-4 border rounded-lg bg-card">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Filtry</h2>
-        <div className="flex items-center gap-4">
-          <ResultsCount total={pagination.total} page={pagination.page} limit={pagination.limit} />
-          {showResetButton && (
-            <Button variant="outline" size="sm" onClick={onReset} aria-label="Resetuj filtry">
-              Resetuj filtry
-            </Button>
-          )}
+      <div className="flex flex-col gap-y-2 md:gap-y-0">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Filtry</h2>
+          <div className="flex items-center gap-x-4">
+            <div className="invisible md:visible">{resultsCount}</div>
+            {showResetButton && (
+              <Button variant="outline" size="sm" onClick={onReset} aria-label="Resetuj filtry">
+                Resetuj filtry
+              </Button>
+            )}
+          </div>
         </div>
+        <div className="md:invisible md:h-0">{resultsCount}</div>
       </div>
-
       <FilterControls value={value} options={options} onChange={onChange} />
     </div>
   );

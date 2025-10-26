@@ -8,7 +8,7 @@ export const prerender = false;
 // Parse query parameters
 const url = Astro.url;
 const page = parseInt(url.searchParams.get("page") || "1");
-const limit = parseInt(url.searchParams.get("limit") || "12");
+const limit = parseInt(url.searchParams.get("limit") || "6");
 const sort = (url.searchParams.get("sort") as GetIdeasQueryParams["sort"]) || "created_at";
 const order = (url.searchParams.get("order") as GetIdeasQueryParams["order"]) || "desc";
 const relationId = url.searchParams.get("relation_id") ? parseInt(url.searchParams.get("relation_id")!) : undefined;

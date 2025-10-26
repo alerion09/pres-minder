@@ -1,11 +1,10 @@
 interface ResultsCountProps {
-  total: number;
-  page: number;
-  limit: number;
+  results: number;
+  totalResults: number;
 }
 
-export function ResultsCount({ total, page, limit }: ResultsCountProps) {
-  if (total === 0) {
+export function ResultsCount({ results, totalResults }: ResultsCountProps) {
+  if (totalResults === 0) {
     return (
       <div className="text-sm text-muted-foreground" aria-live="polite">
         Brak wyników
@@ -13,12 +12,9 @@ export function ResultsCount({ total, page, limit }: ResultsCountProps) {
     );
   }
 
-  const start = (page - 1) * limit + 1;
-  const end = Math.min(page * limit, total);
-
   return (
     <div className="text-sm text-muted-foreground" aria-live="polite">
-      Wyświetlane {start}–{end} z {total} {total === 1 ? "wyniku" : "wyników"}
+      Wyświetlane {results} z {totalResults} {totalResults === 1 ? "wyniku" : "wyników"}
     </div>
   );
 }
