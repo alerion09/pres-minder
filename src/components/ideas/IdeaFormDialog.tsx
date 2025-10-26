@@ -72,6 +72,7 @@ export function IdeaFormDialog({
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
   const [originalContent, setOriginalContent] = useState("");
+  const [clickedCardIndex, setClickedCardIndex] = useState<number | null>(null);
 
   // Inicjalizacja formularza w trybie edycji
   useEffect(() => {
@@ -312,12 +313,18 @@ export function IdeaFormDialog({
     }
   };
 
-  const handleAcceptSuggestion = (suggestion: string) => {
+  const handleAcceptSuggestion = (suggestion: string, index: number) => {
+    setClickedCardIndex(index);
     setFormData((prev) => ({ ...prev, content: suggestion }));
     setErrors((prev) => {
       const { content, ...rest } = prev;
       return rest;
     });
+    showSuccessToast("Propozycja dodana do treści pomysłu");
+
+    setTimeout(() => {
+      setClickedCardIndex(null);
+    }, 150);
   };
 
   const handleFieldChange = (field: keyof FormData, value: string) => {
@@ -331,247 +338,257 @@ export function IdeaFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={(newOpen) => !isPending && onOpenChange(newOpen)}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{mode === "create" ? "Dodaj nowy pomysł" : "Edytuj pomysł"}</DialogTitle>
-        </DialogHeader>
+      <DialogContent className="w-full sm:max-w-lg max-h-[90vh] flex flex-col gap-0 p-0">
+        <div className="flex-1 overflow-y-auto px-6 pt-6">
+          <DialogHeader className="mb-6">
+            <DialogTitle>{mode === "create" ? "Dodaj nowy pomysł" : "Edytuj pomysł"}</DialogTitle>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit} noValidate className="space-y-6">
-          {/* Nazwa */}
-          <div className="space-y-2">
-            <Label htmlFor="name">
-              Nazwa pomysłu <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => handleFieldChange("name", e.target.value)}
-              placeholder="np. Książka o astronomii"
-              maxLength={255}
-              disabled={isPending}
-              aria-invalid={!!errors.name}
-              aria-describedby={errors.name ? "name-error" : undefined}
-            />
-            {errors.name && (
-              <p id="name-error" className="text-sm text-destructive">
-                {errors.name}
-              </p>
-            )}
-          </div>
-
-          {/* Sekcja: Informacje o osobie */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="relation_id">Relacja</Label>
-              <Select
-                value={formData.relation_id || undefined}
-                onValueChange={(val) => handleFieldChange("relation_id", val)}
-                disabled={isPending}
-              >
-                <SelectTrigger id="relation_id">
-                  <SelectValue placeholder="Wybierz relację" />
-                </SelectTrigger>
-                <SelectContent>
-                  {relations.map((rel) => (
-                    <SelectItem key={rel.id} value={rel.id.toString()}>
-                      {rel.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="occasion_id">Okazja</Label>
-              <Select
-                value={formData.occasion_id || undefined}
-                onValueChange={(val) => handleFieldChange("occasion_id", val)}
-                disabled={isPending}
-              >
-                <SelectTrigger id="occasion_id">
-                  <SelectValue placeholder="Wybierz okazję" />
-                </SelectTrigger>
-                <SelectContent>
-                  {occasions.map((occ) => (
-                    <SelectItem key={occ.id} value={occ.id.toString()}>
-                      {occ.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="age">Wiek (lata)</Label>
+          <form id="idea-form" onSubmit={handleSubmit} noValidate className="space-y-6 pb-6">
+            <div className="space-y-2 md:col-span-3">
+              <Label htmlFor="name">
+                Nazwa pomysłu <span className="text-destructive">*</span>
+              </Label>
               <Input
-                id="age"
-                type="number"
-                min="1"
-                max="500"
-                value={formData.age}
-                onChange={(e) => handleFieldChange("age", e.target.value)}
-                placeholder="np. 30"
+                id="name"
+                value={formData.name}
+                onChange={(e) => handleFieldChange("name", e.target.value)}
+                placeholder="np. Książka o astronomii"
+                maxLength={255}
                 disabled={isPending}
-                aria-invalid={!!errors.age}
-                aria-describedby={errors.age ? "age-error" : undefined}
+                aria-invalid={!!errors.name}
+                aria-describedby={errors.name ? "name-error" : undefined}
               />
-              {errors.age && (
-                <p id="age-error" className="text-sm text-destructive">
-                  {errors.age}
+              {errors.name && (
+                <p id="name-error" className="text-sm text-destructive">
+                  {errors.name}
                 </p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="interests">Zainteresowania</Label>
-              <Input
-                id="interests"
-                value={formData.interests}
-                onChange={(e) => handleFieldChange("interests", e.target.value)}
-                placeholder="np. Sport, muzyka, książki"
-                maxLength={1000}
-                disabled={isPending}
-                aria-invalid={!!errors.interests}
-                aria-describedby={errors.interests ? "interests-error" : undefined}
-              />
-              {errors.interests && (
-                <p id="interests-error" className="text-sm text-destructive">
-                  {errors.interests}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Opis osoby */}
-          <div className="space-y-2">
-            <Label htmlFor="person_description">Opis osoby</Label>
-            <Textarea
-              id="person_description"
-              value={formData.person_description}
-              onChange={(e) => handleFieldChange("person_description", e.target.value)}
-              placeholder="Dodatkowe informacje o osobie obdarowywanej..."
-              rows={3}
-              maxLength={1000}
-              disabled={isPending}
-              aria-invalid={!!errors.person_description}
-              aria-describedby={errors.person_description ? "person_description-error" : undefined}
-            />
-            {errors.person_description && (
-              <p id="person_description-error" className="text-sm text-destructive">
-                {errors.person_description}
-              </p>
-            )}
-          </div>
-
-          {/* Budżet */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="budget_min">Budżet minimalny (PLN)</Label>
-              <Input
-                id="budget_min"
-                type="number"
-                min="0"
-                value={formData.budget_min}
-                onChange={(e) => handleFieldChange("budget_min", e.target.value)}
-                placeholder="np. 50"
-                disabled={isPending}
-                aria-invalid={!!errors.budget_min}
-                aria-describedby={errors.budget_min ? "budget_min-error" : undefined}
-              />
-              {errors.budget_min && (
-                <p id="budget_min-error" className="text-sm text-destructive">
-                  {errors.budget_min}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="budget_max">Budżet maksymalny (PLN)</Label>
-              <Input
-                id="budget_max"
-                type="number"
-                min="0"
-                value={formData.budget_max}
-                onChange={(e) => handleFieldChange("budget_max", e.target.value)}
-                placeholder="np. 200"
-                disabled={isPending}
-                aria-invalid={!!errors.budget_max}
-                aria-describedby={errors.budget_max ? "budget_max-error" : undefined}
-              />
-              {errors.budget_max && (
-                <p id="budget_max-error" className="text-sm text-destructive">
-                  {errors.budget_max}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Panel AI */}
-          <div className="space-y-3 border-t pt-4">
-            <div className="flex items-center justify-between">
-              <Label>Sugestie AI</Label>
-              <Button
-                type="button"
-                onClick={handleGenerateAI}
-                disabled={isGenerating || isPending}
-                variant="outline"
-                size="sm"
-              >
-                {isGenerating ? "Generowanie..." : "Wygeneruj pomysły"}
-              </Button>
-            </div>
-
-            {aiSuggestions.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Kliknij na pomysł, aby go użyć:</p>
-                {aiSuggestions.map((suggestion, idx) => (
-                  <Card
-                    key={idx}
-                    className="cursor-pointer hover:bg-accent/50 transition-colors"
-                    onClick={() => handleAcceptSuggestion(suggestion)}
-                  >
-                    <CardContent className="p-3">
-                      <p className="text-sm">{suggestion}</p>
-                    </CardContent>
-                  </Card>
-                ))}
+            <div className="space-y-2 md:col-span-2">
+              <Label>Budżet w PLN (od - do)</Label>
+              <div className="flex items-start gap-2">
+                <div className="flex-1 space-y-1">
+                  <Input
+                    id="budget_min"
+                    type="number"
+                    min="0"
+                    value={formData.budget_min}
+                    onChange={(e) => handleFieldChange("budget_min", e.target.value)}
+                    placeholder="od"
+                    disabled={isPending}
+                    aria-label="Budżet minimalny w PLN"
+                    aria-invalid={!!errors.budget_min}
+                    aria-describedby={errors.budget_min ? "budget_min-error" : undefined}
+                  />
+                  {errors.budget_min && (
+                    <p id="budget_min-error" className="text-sm text-destructive">
+                      {errors.budget_min}
+                    </p>
+                  )}
+                </div>
+                <span className="text-muted-foreground pt-2" aria-hidden="true">
+                  –
+                </span>
+                <div className="flex-1 space-y-1">
+                  <Input
+                    id="budget_max"
+                    type="number"
+                    min="0"
+                    value={formData.budget_max}
+                    onChange={(e) => handleFieldChange("budget_max", e.target.value)}
+                    placeholder="do"
+                    disabled={isPending}
+                    aria-label="Budżet maksymalny w PLN"
+                    aria-invalid={!!errors.budget_max}
+                    aria-describedby={errors.budget_max ? "budget_max-error" : undefined}
+                  />
+                  {errors.budget_max && (
+                    <p id="budget_max-error" className="text-sm text-destructive">
+                      {errors.budget_max}
+                    </p>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* Treść pomysłu */}
-          <div className="space-y-2">
-            <Label htmlFor="content">
-              Treść pomysłu <span className="text-destructive">*</span>
-            </Label>
-            <Textarea
-              id="content"
-              value={formData.content}
-              onChange={(e) => handleFieldChange("content", e.target.value)}
-              placeholder="Opisz swój pomysł na prezent..."
-              rows={5}
-              maxLength={10000}
-              disabled={isPending}
-              aria-invalid={!!errors.content}
-              aria-describedby={errors.content ? "content-error" : undefined}
-            />
-            {errors.content && (
-              <p id="content-error" className="text-sm text-destructive">
-                {errors.content}
-              </p>
-            )}
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div className="space-y-2 min-w-0 md:col-span-2">
+                <Label htmlFor="relation_id">Relacja</Label>
+                <Select
+                  value={formData.relation_id || undefined}
+                  onValueChange={(val) => handleFieldChange("relation_id", val)}
+                  disabled={isPending}
+                >
+                  <SelectTrigger id="relation_id" className="w-full">
+                    <SelectValue placeholder="Wybierz relację" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {relations.map((rel) => (
+                      <SelectItem key={rel.id} value={rel.id.toString()}>
+                        {rel.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          {/* Footer */}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-              Anuluj
-            </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? "Zapisywanie..." : mode === "create" ? "Dodaj pomysł" : "Zapisz zmiany"}
-            </Button>
-          </DialogFooter>
-        </form>
+              <div className="space-y-2 min-w-0 md:col-span-2">
+                <Label htmlFor="occasion_id">Okazja</Label>
+                <Select
+                  value={formData.occasion_id || undefined}
+                  onValueChange={(val) => handleFieldChange("occasion_id", val)}
+                  disabled={isPending}
+                >
+                  <SelectTrigger id="occasion_id" className="w-full">
+                    <SelectValue placeholder="Wybierz okazję" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {occasions.map((occ) => (
+                      <SelectItem key={occ.id} value={occ.id.toString()}>
+                        {occ.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2 min-w-0">
+                <Label htmlFor="age">Wiek (lata)</Label>
+                <Input
+                  id="age"
+                  type="number"
+                  min="1"
+                  max="500"
+                  value={formData.age}
+                  onChange={(e) => handleFieldChange("age", e.target.value)}
+                  placeholder="np. 30"
+                  disabled={isPending}
+                  aria-invalid={!!errors.age}
+                  aria-describedby={errors.age ? "age-error" : undefined}
+                  className="w-full"
+                />
+                {errors.age && (
+                  <p id="age-error" className="text-sm text-destructive">
+                    {errors.age}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Zainteresowania i opis osoby */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="interests">Zainteresowania osoby</Label>
+                <Textarea
+                  id="interests"
+                  value={formData.interests}
+                  onChange={(e) => handleFieldChange("interests", e.target.value)}
+                  placeholder="np. Sport, muzyka, książki"
+                  rows={2}
+                  maxLength={1000}
+                  disabled={isPending}
+                  aria-invalid={!!errors.interests}
+                  aria-describedby={errors.interests ? "interests-error" : undefined}
+                />
+                {errors.interests && (
+                  <p id="interests-error" className="text-sm text-destructive">
+                    {errors.interests}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="person_description">Opis osoby</Label>
+                <Textarea
+                  id="person_description"
+                  value={formData.person_description}
+                  onChange={(e) => handleFieldChange("person_description", e.target.value)}
+                  placeholder="Dodatkowe informacje o osobie obdarowywanej..."
+                  rows={2}
+                  maxLength={1000}
+                  disabled={isPending}
+                  aria-invalid={!!errors.person_description}
+                  aria-describedby={errors.person_description ? "person_description-error" : undefined}
+                />
+                {errors.person_description && (
+                  <p id="person_description-error" className="text-sm text-destructive">
+                    {errors.person_description}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Treść pomysłu */}
+            <div className="space-y-2">
+              <Label htmlFor="content">
+                Treść pomysłu <span className="text-destructive">*</span>
+              </Label>
+              <Textarea
+                id="content"
+                value={formData.content}
+                onChange={(e) => handleFieldChange("content", e.target.value)}
+                placeholder="Opisz swój pomysł na prezent..."
+                rows={5}
+                maxLength={10000}
+                disabled={isPending}
+                aria-invalid={!!errors.content}
+                aria-describedby={errors.content ? "content-error" : undefined}
+              />
+              {errors.content && (
+                <p id="content-error" className="text-sm text-destructive">
+                  {errors.content}
+                </p>
+              )}
+            </div>
+
+            {/* Panel AI */}
+            <div className="space-y-3 border-t pt-4">
+              <div className="flex items-center justify-between">
+                <Label>Sugestie AI</Label>
+                <Button
+                  type="button"
+                  onClick={handleGenerateAI}
+                  disabled={isGenerating || isPending}
+                  variant="outline"
+                  size="sm"
+                >
+                  {isGenerating ? "Generowanie..." : "Wygeneruj pomysły"}
+                </Button>
+              </div>
+
+              {aiSuggestions.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Kliknij na pomysł, aby go użyć:</p>
+                  {aiSuggestions.map((suggestion, idx) => (
+                    <Card
+                      key={idx}
+                      className={`p-0 cursor-pointer hover:bg-accent/50 transition-all duration-300 ${
+                        clickedCardIndex === idx ? "opacity-0 scale-95 translate-x-2" : "opacity-100 scale-100"
+                      }`}
+                      onClick={() => handleAcceptSuggestion(suggestion, idx)}
+                    >
+                      <CardContent className="p-3">
+                        <p className="text-sm">{suggestion}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </form>
+        </div>
+
+        {/* Footer - always at bottom */}
+        <DialogFooter className="flex-shrink-0 bg-background border-t px-6 py-4 rounded-b-lg">
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+            Anuluj
+          </Button>
+          <Button type="submit" form="idea-form" disabled={isPending}>
+            {isPending ? "Zapisywanie..." : mode === "create" ? "Dodaj pomysł" : "Zapisz zmiany"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
