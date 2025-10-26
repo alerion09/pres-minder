@@ -21,6 +21,7 @@ import type {
 interface IdeaFormDialogProps {
   open: boolean;
   mode: "create" | "edit";
+  userId: string;
   idea?: IdeaDTO;
   relations: RelationDTO[];
   occasions: OccasionDTO[];
@@ -44,7 +45,16 @@ interface FormErrors {
   [key: string]: string;
 }
 
-export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenChange, onSaved }: IdeaFormDialogProps) {
+export function IdeaFormDialog({
+  open,
+  mode,
+  userId,
+  idea,
+  relations,
+  occasions,
+  onOpenChange,
+  onSaved,
+}: IdeaFormDialogProps) {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     age: "",
@@ -191,7 +201,7 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
       if (mode === "create") {
         // POST /api/ideas
         const command: CreateIdeaCommand = {
-          user_id: "anonymous", // TODO: replace with actual user_id when auth is implemented
+          user_id: userId,
           name: formData.name.trim(),
           content: formData.content.trim(),
           source,
@@ -223,7 +233,7 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
       } else {
         // PUT /api/ideas/:id
         const command: UpdateIdeaCommand = {
-          user_id: "anonymous", // TODO: replace with actual user_id when auth is implemented
+          user_id: userId,
           name: formData.name.trim(),
           content: formData.content.trim(),
           source,
@@ -290,8 +300,9 @@ export function IdeaFormDialog({ open, mode, idea, relations, occasions, onOpenC
         return;
       }
 
-      const result: GenerateIdeaResponseDTO = await response.json();
-      setAiSuggestions(result.suggestions.map((s) => s.content));
+      const result = await response.json();
+      const responseData: GenerateIdeaResponseDTO = result.data;
+      setAiSuggestions(responseData.suggestions.map((s) => s.content));
       showSuccessToast("Wygenerowano propozycje pomysłów");
     } catch (err) {
       console.error("[IdeaFormDialog] Generate AI error:", err);

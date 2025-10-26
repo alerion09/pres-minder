@@ -10,6 +10,7 @@ import type { IdeaDTO, RelationDTO, OccasionDTO, PaginationMetaDTO } from "@/typ
 import type { FilterStateVM, FilterOptionsVM } from "@/lib/types/ideas-view.types";
 
 interface IdeasViewProps {
+  userId: string;
   initialIdeas: IdeaDTO[];
   initialPagination: PaginationMetaDTO;
   initialFilters: FilterStateVM;
@@ -41,7 +42,14 @@ function prepareFilterOptions(relations: RelationDTO[], occasions: OccasionDTO[]
   };
 }
 
-export function IdeasView({ initialIdeas, initialPagination, initialFilters, relations, occasions }: IdeasViewProps) {
+export function IdeasView({
+  userId,
+  initialIdeas,
+  initialPagination,
+  initialFilters,
+  relations,
+  occasions,
+}: IdeasViewProps) {
   const [ideas, setIdeas] = useState<IdeaDTO[]>(initialIdeas);
   const [selectedIdeaId, setSelectedIdeaId] = useState<number | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -129,6 +137,7 @@ export function IdeasView({ initialIdeas, initialPagination, initialFilters, rel
       <IdeaFormDialog
         open={formOpen}
         mode={formMode}
+        userId={userId}
         idea={formMode === "edit" ? selectedIdea : undefined}
         relations={relations}
         occasions={occasions}
