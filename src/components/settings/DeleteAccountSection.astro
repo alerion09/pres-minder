@@ -1,0 +1,24 @@
+---
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import DeleteAccountPanel from "./DeleteAccountPanel";
+
+interface Props {
+  userEmail?: string;
+}
+
+const { userEmail } = Astro.props;
+---
+
+<section aria-labelledby="delete-account-heading">
+  <Card className="max-w-5xl">
+    <CardHeader>
+      <CardTitle id="delete-account-heading">Usuwanie konta</CardTitle>
+      <CardDescription>
+        Ta operacja jest nieodwracalna. Po usunięciu konta wszystkie Twoje dane zostaną trwale usunięte.
+      </CardDescription>
+    </CardHeader>
+    <CardContent>
+      <DeleteAccountPanel client:load userEmail={userEmail} />
+    </CardContent>
+  </Card>
+</section>

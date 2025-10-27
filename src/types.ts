@@ -168,3 +168,37 @@ export interface GetIdeasQueryParams {
   occasion_id?: number;
   source?: IdeaSource;
 }
+
+// ============================================================================
+// Account Settings Types
+// ============================================================================
+
+/**
+ * DeleteAccountViewModel - View model for delete account panel state
+ * Manages the UI state for the account deletion flow
+ */
+export interface DeleteAccountViewModel {
+  acknowledged: boolean;
+  isValid: boolean;
+  isSubmitting: boolean;
+  error?: string | null;
+  success?: boolean;
+}
+
+/**
+ * DeleteAccountActionResult - Result of account deletion attempt
+ * Used in future API integration
+ */
+export interface DeleteAccountActionResult {
+  success: boolean;
+  message?: string;
+}
+
+/**
+ * DeleteAccountValidation - Validation state for account deletion
+ * Breaks down validation into component parts
+ */
+export interface DeleteAccountValidation {
+  acknowledged: boolean;
+  isValid: boolean;
+}

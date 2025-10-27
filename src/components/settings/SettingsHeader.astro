@@ -1,0 +1,17 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = "Ustawienia konta", description = "Zarządzaj ustawieniami swojego konta." } = Astro.props;
+---
+
+<header class="mb-8 space-y-2">
+  <h1 class="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50">
+    {title}
+  </h1>
+  <p class="text-neutral-600 dark:text-neutral-400">
+    {description}
+  </p>
+</header>
