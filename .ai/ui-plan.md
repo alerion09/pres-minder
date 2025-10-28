@@ -38,13 +38,12 @@
 - UX, dostępność i względy bezpieczeństwa: Wymuszenie minimalnej długości hasła, asynchroniczne stany przycisku, focus na komunikaty błędów, sanitizacja wejść, brak autopodpowiadania haseł.
 
 ### Layout aplikacji
-
 - Nazwa widoku: Layout aplikacji
 - Ścieżka widoku: `/ideas`, `/settings`
 - Główny cel: Zapewnić wspólną strukturę nawigacji i kontekst dla widoków po zalogowaniu.
-- Kluczowe informacje do wyświetlenia: Pasek górny z nazwą aplikacji jako logo, menu profilu, slot na zawartość.
-- Kluczowe komponenty widoku: 'szkielet aplikacji z nawigacją', 'górny pasek z nazwą aplikacji', 'menu profilu użytkownika', 'centrum powiadomień toast', 'warstwa portali modalnych'.
-- UX, dostępność i względy bezpieczeństwa: Responsywna nawigacja (przełączanie na menu rozwijane), `aria-current` na aktywnych pozycjach, bezpieczne wylogowanie z Supabase.
+- Kluczowe informacje do wyświetlenia: Pasek górny z nazwą aplikacji jako logo (kliknięcie przekierowuje na homepage '/'), po prawej stronie ikona zębatki (przejście do '/settings') oraz ikona wylogowanie (uruchomienie akcji wylogowania).
+- Kluczowe komponenty widoku: 'szkielet aplikacji z nawigacją', 'górny pasek z nazwą aplikacji', 'centrum powiadomień toast', 'warstwa portali modalnych'.
+- UX, dostępność i względy bezpieczeństwa: Responsywna nawigacja (przełączanie na menu rozwijane), `aria-current` na aktywnych pozycjach.
 
 ### Widok listy pomysłów
 

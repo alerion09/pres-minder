@@ -151,6 +151,16 @@ Następujące funkcje nie wchodzą w zakres MVP:
   - Lista jest pusta i zawiera wyraźny przycisk lub zachętę do stworzenia pierwszego pomysłu.
   - Aplikacja nie wyświetla żadnych pełnoekranowych samouczków ani instrukcji.
 
+### US-009: Nawigacja po aplikacji
+
+- ID: US-009
+- Tytuł: Używanie menu do nawigacji.
+- Opis: Jako użytkownik, chcę nawigować po aplikacji móc się wylogować.
+- Kryteria akceptacji:
+  - Po kliku w logo jestem przekierowany na stronę główną.
+  - Po kliku w ikonę zębatki jestem przekierowany na stronę z ustawieniami konta.
+  - Po kliku w ikonę wylogowania następuje wylogowanie z aplikacji i przekierowanie do strony logowania.
+
 ## 6. Metryki sukcesu
 
 ### 6.1. Adopcja funkcji generowania przez AI
