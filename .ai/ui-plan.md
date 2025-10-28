@@ -3,9 +3,9 @@
 ## 1. Przegląd struktury UI
 
 - Strefa nieautoryzowana (`/login`, `/register`) obejmuje minimalistyczny layout formularzy logowania i rejestracji, oddzielony od części aplikacyjnej.
-- Strefa autoryzowana (`/ideas`, `/settings`) korzysta z layoutu z górnym paskiem nawigacyjnym, menu profilu, globalnym centrum toastów i portali modalnych.
-- Główny widok `/ideas` łączy górne filtry, licznik wyników, siatkę kart pomysłów, paginację i pusty stan, korzystając z danych słownikowych buforowanych w pamięci.
-- Modale formularza, podglądu i usuwania działają jako nakładki na `/ideas`, utrzymując focus trap, kontrolując flagi `source` i integrację z `POST/PUT/DELETE /api/ideas`.
+- Strefa autoryzowana (`/`, `/settings`) korzysta z layoutu z górnym paskiem nawigacyjnym, menu profilu, globalnym centrum toastów i portali modalnych.
+- Główny widok `/` (homepage - lista pomysłów) łączy górne filtry, licznik wyników, siatkę kart pomysłów, paginację i pusty stan, korzystając z danych słownikowych buforowanych w pamięci.
+- Modale formularza, podglądu i usuwania działają jako nakładki na `/`, utrzymując focus trap, kontrolując flagi `source` i integrację z `POST/PUT/DELETE /api/ideas`.
 - Widok ustawień `/settings` konsoliduje akcje konta (zmiana hasła, usunięcie konta) i komunikuje krytyczne operacje poprzez ostrzeżenia oraz dodatkowe potwierdzenia.
 
 ## 2. Lista widoków
@@ -38,8 +38,9 @@
 - UX, dostępność i względy bezpieczeństwa: Wymuszenie minimalnej długości hasła, asynchroniczne stany przycisku, focus na komunikaty błędów, sanitizacja wejść, brak autopodpowiadania haseł.
 
 ### Layout aplikacji
+
 - Nazwa widoku: Layout aplikacji
-- Ścieżka widoku: `/ideas`, `/settings`
+- Ścieżka widoku: `/`, `/settings`
 - Główny cel: Zapewnić wspólną strukturę nawigacji i kontekst dla widoków po zalogowaniu.
 - Kluczowe informacje do wyświetlenia: Pasek górny z nazwą aplikacji jako logo (kliknięcie przekierowuje na homepage '/'), po prawej stronie ikona zębatki (przejście do '/settings') oraz ikona wylogowanie (uruchomienie akcji wylogowania).
 - Kluczowe komponenty widoku: 'szkielet aplikacji z nawigacją', 'górny pasek z nazwą aplikacji', 'centrum powiadomień toast', 'warstwa portali modalnych'.
@@ -47,8 +48,8 @@
 
 ### Widok listy pomysłów
 
-- Nazwa widoku: Lista pomysłów
-- Ścieżka widoku: `/ideas`
+- Nazwa widoku: Lista pomysłów (homepage)
+- Ścieżka widoku: `/`
 - Główny cel: Prezentować pomysły użytkownika z możliwością filtrowania, paginowania i akcji na kartach.
 - Kluczowe informacje do wyświetlenia: Górny pasek filtrów (relacja, okazja, źródło, sortowanie), licznik wyniku, siatka kart z nazwą, okazją, skrótem treści, badge `source`, pusty stan lub skeletony, paginacja.
 - Kluczowe komponenty widoku: 'pasek filtrów', 'kontrolki wyboru filtrów', 'licznik wyników', 'siatka kart pomysłów', 'karta pomysłu', 'znacznik źródła pomysłu', 'paginacja', 'pusty stan tablicy', 'szkielet karty podczas ładowania'.
@@ -66,7 +67,7 @@
 ### Modal podglądu pomysłu
 
 - Nazwa widoku: Modal podglądu pomysłu
-- Ścieżka widoku: `/ideas?modal=idea-preview` z id itemu
+- Ścieżka widoku: `/?modal=idea-preview` z id itemu
 - Główny cel: Pokazać pełne dane pomysłu w trybie tylko do odczytu z wejściem do edycji lub usunięcia.
 - Kluczowe informacje do wyświetlenia: Wszystkie pola pomysłu, badge `source`, daty utworzenia/aktualizacji, przyciski „Edytuj” i „Usuń”.
 - Kluczowe komponenty widoku: 'modal podglądu pomysłu', 'lista szczegółów pomysłu', 'znacznik statusu', 'przyciski akcji'.
@@ -92,15 +93,15 @@
 
 ## 3. Mapa podróży użytkownika
 
-- **Pierwsze użycie (US-001 + US-008):** Użytkownik przechodzi na `/register`, tworzy konto, po sukcesie trafia na pusty `/ideas`, czyta komunikat zachęcający, uruchamia modal formularza, opcjonalnie generuje propozycje AI, zapisuje pomysł i widzi nową kartę na górze listy.
-- **Powracający użytkownik (US-002 + US-007):** Po logowaniu na `/login` trafia na `/ideas`, które ładuje zapisane filtry, przegląda karty z badge’ami źródła, korzysta z filtrów i paginacji, otwiera podgląd i w razie potrzeby edytuje lub usuwa pomysł.
+- **Pierwsze użycie (US-001 + US-008):** Użytkownik przechodzi na `/register`, tworzy konto, po sukcesie trafia na pusty homepage `/`, czyta komunikat zachęcający, uruchamia modal formularza, opcjonalnie generuje propozycje AI, zapisuje pomysł i widzi nową kartę na górze listy.
+- **Powracający użytkownik (US-002 + US-007):** Po logowaniu na `/login` trafia na homepage `/`, które ładuje zapisane filtry, przegląda karty z badge'ami źródła, korzysta z filtrów i paginacji, otwiera podgląd i w razie potrzeby edytuje lub usuwa pomysł.
 - **Tworzenie z AI (US-005):** W modalu formularza uzupełnia dane, uruchamia `Generuj pomysły`, czeka na spinner, przegląda 5 kart, akceptuje jedną z nich, modyfikuje treść (zmienia flagę na `edited-ai`), zapisuje i otrzymuje toast potwierdzający.
 - **Manualne tworzenie lub edycja (US-006 + US-007):** Użytkownik pomija generowanie, wpisuje treść ręcznie, zapisuje pomysł z flagą `manual`, podczas edycji modyfikuje dane i otrzymuje aktualizację listy bez przeładowania.
 - **Zarządzanie kontem (US-003 + US-004):** Z menu profilu wybiera `/settings`, zmienia hasło z walidacją inline i komunikatem sukcesu, lub inicjuje usunięcie konta, zaznacza checkbox ostrzegawczy, wpisuje frazę potwierdzającą, potwierdza i zostaje wylogowany.
 
 ## 4. Układ i struktura nawigacji
 
-- Górny pasek w layoutcie aplikacji prezentuje nazwę PresMinder prowadzącą na `/ideas` oraz menu profilu z linkami do `/ideas`, `/settings` i akcją wylogowania.
+- Górny pasek w layoutcie aplikacji prezentuje nazwę PresMinder prowadzącą na `/` (homepage) oraz menu profilu z linkami do `/` (homepage), `/settings` i akcją wylogowania.
 - Filtry listy znajdują się w poziomym pasku nad siatką; na urządzeniach mobilnych zwijają się do panelu typu disclosure sterowanego przyciskiem „Filtry”.
 - Paginacja z przyciskami „Poprzednia/Następna” i numerami stron osadzona pod siatką, z informacją o zakresie wyników.
 - Layout autoryzacji prezentuje formularze na środku ekranu z linkiem przełączającym, bez globalnej nawigacji.

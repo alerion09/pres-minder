@@ -19,7 +19,7 @@ Wybór odpowiedniego prezentu na ważną okazję jest często trudnym i stresuj�
 
 ### 3.2. Tworzenie i zarządzanie pomysłami na prezenty
 
-- Użytkownik ma dostęp do listy swoich pomysłów, która jest głównym widokiem aplikacji.
+- Użytkownik ma dostęp do listy swoich pomysłów, która jest głównym widokiem aplikacji (homepage, ścieżka: '/').
 - Tworzenie nowego pomysłu odbywa się poprzez modal, który zawiera ustrukturyzowany formularz.
 - Formularz zawiera pola do opisu osoby i okazji: 'Nazwa pomysłu', 'Wiek', 'Zainteresowania', 'Relacja' (predefiniowana lista), 'Okazja' (predefiniowana lista), 'Budżet' (półka cenowa).
 - Modal zawiera również pole tekstowe do wpisania lub edycji treści pomysłu.
@@ -157,7 +157,7 @@ Następujące funkcje nie wchodzą w zakres MVP:
 - Tytuł: Używanie menu do nawigacji.
 - Opis: Jako użytkownik, chcę nawigować po aplikacji móc się wylogować.
 - Kryteria akceptacji:
-  - Po kliku w logo jestem przekierowany na stronę główną.
+  - Po kliku w logo jestem przekierowany na stronę główną (lista pomysłów, ścieżka: '/').
   - Po kliku w ikonę zębatki jestem przekierowany na stronę z ustawieniami konta.
   - Po kliku w ikonę wylogowania następuje wylogowanie z aplikacji i przekierowanie do strony logowania.
 
