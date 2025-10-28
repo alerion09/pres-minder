@@ -1,5 +1,5 @@
 ---
-import Layout from "@/layouts/Layout.astro";
+import AppLayout from "@/layouts/AppLayout.astro";
 import SettingsHeader from "@/components/settings/SettingsHeader.astro";
 import DeleteAccountSection from "@/components/settings/DeleteAccountSection.astro";
 
@@ -7,14 +7,12 @@ import DeleteAccountSection from "@/components/settings/DeleteAccountSection.ast
 const userEmail = "user@example.com";
 ---
 
-<Layout title="Ustawienia konta">
-  <main class="container mx-auto px-4 py-8">
-    <SettingsHeader />
+<AppLayout title="Ustawienia konta">
+  <SettingsHeader />
 
-    <div class="space-y-8">
-      <DeleteAccountSection userEmail={userEmail} />
+  <div class="space-y-8">
+    <DeleteAccountSection userEmail={userEmail} />
 
-      <!-- Miejsce na kolejne sekcje ustawień w przyszłości -->
-    </div>
-  </main>
-</Layout>
+    <!-- Miejsce na kolejne sekcje ustawień w przyszłości -->
+  </div>
+</AppLayout>

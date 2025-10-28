@@ -1,0 +1,32 @@
+---
+import LogoutButton from "./LogoutButton";
+import SettingsLink from "./SettingsLink.astro";
+
+interface Props {
+  currentPath: string;
+}
+
+const { currentPath } = Astro.props;
+const isSettingsActive = currentPath === "/settings";
+---
+
+<header
+  class="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+>
+  <nav class="container mx-auto flex h-16 items-center justify-between px-4" aria-label="Nawigacja główna">
+    <!-- Brand Logo -->
+    <a
+      href="/"
+      class="text-xl font-bold text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      aria-label="Strona główna"
+    >
+      PresMinder
+    </a>
+
+    <!-- Navigation Actions -->
+    <div class="flex items-center gap-2">
+      <SettingsLink active={isSettingsActive} />
+      <LogoutButton client:only="react" />
+    </div>
+  </nav>
+</header>

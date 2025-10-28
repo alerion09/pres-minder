@@ -1,5 +1,5 @@
 ---
-import Layout from "@/layouts/Layout.astro";
+import AppLayout from "@/layouts/AppLayout.astro";
 import { IdeasView } from "@/components/ideas/IdeasView";
 import type { GetIdeasQueryParams, IdeaSource } from "@/types";
 
@@ -67,16 +67,14 @@ const initialState = {
 };
 ---
 
-<Layout title="Moje pomysły">
-  <main class="container mx-auto px-4 py-8">
-    <IdeasView
-      client:load
-      userId={userId}
-      initialIdeas={initialState.ideas}
-      initialPagination={initialState.pagination}
-      initialFilters={initialState.filters}
-      relations={initialState.relations}
-      occasions={initialState.occasions}
-    />
-  </main>
-</Layout>
+<AppLayout title="Moje pomysły">
+  <IdeasView
+    client:load
+    userId={userId}
+    initialIdeas={initialState.ideas}
+    initialPagination={initialState.pagination}
+    initialFilters={initialState.filters}
+    relations={initialState.relations}
+    occasions={initialState.occasions}
+  />
+</AppLayout>
