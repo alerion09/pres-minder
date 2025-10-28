@@ -7,12 +7,15 @@ export const prerender = false;
 
 // Parse query parameters
 const url = Astro.url;
+
 const page = parseInt(url.searchParams.get("page") || "1");
 const limit = parseInt(url.searchParams.get("limit") || "6");
 const sort = (url.searchParams.get("sort") as GetIdeasQueryParams["sort"]) || "created_at";
 const order = (url.searchParams.get("order") as GetIdeasQueryParams["order"]) || "desc";
-const relationId = url.searchParams.get("relation_id") ? parseInt(url.searchParams.get("relation_id")!) : undefined;
-const occasionId = url.searchParams.get("occasion_id") ? parseInt(url.searchParams.get("occasion_id")!) : undefined;
+const relationIdParam = url.searchParams.get("relation_id");
+const occasionIdParam = url.searchParams.get("occasion_id");
+const relationId = relationIdParam ? parseInt(relationIdParam) : undefined;
+const occasionId = occasionIdParam ? parseInt(occasionIdParam) : undefined;
 const source = url.searchParams.get("source") as IdeaSource | undefined;
 
 // Fetch data from API

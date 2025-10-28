@@ -41,9 +41,7 @@ interface FormData {
   content: string;
 }
 
-interface FormErrors {
-  [key: string]: string;
-}
+type FormErrors = Record<string, string>;
 
 export function IdeaFormDialog({
   open,
@@ -144,11 +142,11 @@ export function IdeaFormDialog({
     const budgetMin = formData.budget_min ? Number(formData.budget_min) : null;
     const budgetMax = formData.budget_max ? Number(formData.budget_max) : null;
 
-    if (formData.budget_min && (isNaN(budgetMin!) || budgetMin! < 0)) {
+    if (budgetMin && (isNaN(budgetMin) || budgetMin < 0)) {
       newErrors.budget_min = "Minimalny budżet musi być liczbą większą lub równą 0";
     }
 
-    if (formData.budget_max && (isNaN(budgetMax!) || budgetMax! < 0)) {
+    if (budgetMax && (isNaN(budgetMax) || budgetMax < 0)) {
       newErrors.budget_max = "Maksymalny budżet musi być liczbą większą lub równą 0";
     }
 
@@ -247,7 +245,7 @@ export function IdeaFormDialog({
           budget_max: formData.budget_max ? Number(formData.budget_max) : null,
         };
 
-        const response = await fetch(`/api/ideas/${idea!.id}`, {
+        const response = await fetch(`/api/ideas/${idea?.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(command),
