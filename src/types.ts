@@ -148,8 +148,8 @@ export interface GenerateIdeaCommand {
   person_description?: string | null;
   budget_min?: number | null;
   budget_max?: number | null;
-  relation_id?: number | null;
-  occasion_id?: number | null;
+  relation?: string | null;
+  occasion?: string | null;
 }
 
 // ============================================================================

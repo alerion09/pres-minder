@@ -7,7 +7,7 @@ export const prerender = false;
 /**
  * POST /api/ideas/generate
  *
- * Generates gift idea suggestions using AI (currently mocked) based on provided hints.
+ * Generates gift idea suggestions using AI based on provided hints.
  * Does not save data to database. Authentication and rate limiting will be added later.
  *
  * Request body (JSON) - all fields optional:
@@ -16,8 +16,8 @@ export const prerender = false;
  * - person_description?: string (max 1000 characters)
  * - budget_min?: number >= 0
  * - budget_max?: number >= budget_min
- * - relation_id?: integer > 0
- * - occasion_id?: integer > 0
+ * - relation?: string (max 100 characters) - relationship type name
+ * - occasion?: string (max 100 characters) - occasion name
  *
  * Responses:
  * - 200: { data: { suggestions: IdeaSuggestionDTO[]; metadata: { model: string; generated_at: string } } }

@@ -1,5 +1,7 @@
 import { z } from "zod";
 import type { GenerateIdeaCommand, GenerateIdeaResponseDTO, IdeaSuggestionDTO } from "@/types";
+import { createOpenRouterService } from "../openrouter.service";
+import type { ResponseFormat } from "../openrouter.types";
 
 // ============================================================================
 // Validation Schema
@@ -34,18 +36,20 @@ export const generateIdeaSchema = z
       .transform((val) => (val === "" ? null : val)),
     budget_min: z.number().min(0, "Minimum budget must be non-negative").optional().nullable(),
     budget_max: z.number().min(0, "Maximum budget must be non-negative").optional().nullable(),
-    relation_id: z
-      .number()
-      .int("Relation ID must be an integer")
-      .positive("Relation ID must be positive")
+    relation: z
+      .string()
+      .trim()
+      .max(100, "Relation cannot exceed 100 characters")
       .optional()
-      .nullable(),
-    occasion_id: z
-      .number()
-      .int("Occasion ID must be an integer")
-      .positive("Occasion ID must be positive")
+      .nullable()
+      .transform((val) => (val === "" ? null : val)),
+    occasion: z
+      .string()
+      .trim()
+      .max(100, "Occasion cannot exceed 100 characters")
       .optional()
-      .nullable(),
+      .nullable()
+      .transform((val) => (val === "" ? null : val)),
   })
   .refine(
     (data) => {
@@ -82,49 +86,145 @@ export function parseAndValidateGenerateIdea(body: unknown): GenerateIdeaCommand
 }
 
 // ============================================================================
-// AI Generation Service (Mocked)
+// JSON Schema for LLM Structured Output
 // ============================================================================
 
 /**
- * Generates gift idea suggestions based on provided hints
- * Currently returns mocked data - AI integration will be added later
+ * JSON Schema for gift ideas response format
+ * Defines the structure for LLM to return gift suggestions
+ */
+const GIFT_IDEAS_SCHEMA = {
+  type: "object",
+  properties: {
+    suggestions: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          content: {
+            type: "string",
+            description: "A detailed gift idea description including the gift name and why it's suitable",
+          },
+        },
+        required: ["content"],
+        additionalProperties: false,
+      },
+      minItems: 5,
+      maxItems: 5,
+    },
+  },
+  required: ["suggestions"],
+  additionalProperties: false,
+} as const;
+
+/**
+ * Response format configuration for OpenRouter structured output
+ */
+const RESPONSE_FORMAT: ResponseFormat = {
+  type: "json_schema",
+  json_schema: {
+    name: "gift_ideas_response",
+    strict: true,
+    schema: GIFT_IDEAS_SCHEMA,
+  },
+};
+
+// ============================================================================
+// Prompt Building
+// ============================================================================
+
+/**
+ * Builds a prompt for the LLM based on the provided command
+ * Includes all relevant context: age, interests, description, budget, relationship type, occasion
+ *
+ * @param command - GenerateIdeaCommand with gift recipient details
+ * @returns Formatted prompt string for the LLM
+ */
+function buildPrompt(command: GenerateIdeaCommand): string {
+  const parts: string[] = [
+    "Jesteś kreatywnym asystentem rekomendacji prezentów. Wygeneruj 5 unikalnych i przemyślanych pomysłów na prezenty na podstawie poniższych informacji o odbiorcy.",
+    "\n\nWAŻNE: Wszystkie odpowiedzi MUSZĄ być w języku polskim, niezależnie od języka podanych informacji.",
+    "\n\nInformacje o odbiorcy:",
+  ];
+
+  if (command.age) {
+    parts.push(`\n- Wiek: ${command.age} lat`);
+  }
+
+  if (command.interests) {
+    parts.push(`\n- Zainteresowania: ${command.interests}`);
+  }
+
+  if (command.person_description) {
+    parts.push(`\n- Opis osoby: ${command.person_description}`);
+  }
+
+  if (command.budget_min !== null && command.budget_min !== undefined) {
+    if (command.budget_max !== null && command.budget_max !== undefined) {
+      parts.push(`\n- Budżet: ${command.budget_min} - ${command.budget_max} zł`);
+    } else {
+      parts.push(`\n- Minimalny budżet: ${command.budget_min} zł`);
+    }
+  } else if (command.budget_max !== null && command.budget_max !== undefined) {
+    parts.push(`\n- Maksymalny budżet: ${command.budget_max} zł`);
+  }
+
+  if (command.relation) {
+    parts.push(`\n- Relacja: ${command.relation}`);
+  }
+
+  if (command.occasion) {
+    parts.push(`\n- Okazja: ${command.occasion}`);
+  }
+
+  parts.push(
+    "\n\nDla każdego pomysłu na prezent podaj szczegółowy opis, który zawiera:",
+    "\n1. Nazwę/typ prezentu",
+    "\n2. Dlaczego jest odpowiedni dla tej osoby",
+    "\n3. Jak pasuje do jej zainteresowań lub okazji",
+    "\n\nKażda sugestia powinna być unikalna, kreatywna i spersonalizowana. Upewnij się, że wszystkie propozycje mieszczą się w podanym budżecie (jeśli został określony).",
+    "\n\nPamiętaj: Odpowiedź MUSI być po polsku!"
+  );
+
+  return parts.join("");
+}
+
+// ============================================================================
+// AI Generation Service
+// ============================================================================
+
+/**
+ * Generates gift idea suggestions using OpenRouter LLM
+ * Creates a contextualized prompt and requests structured JSON output
  *
  * @param command - Validated GenerateIdeaCommand with optional context
- * @returns GenerateIdeaResponseDTO with mocked suggestions and metadata
+ * @returns GenerateIdeaResponseDTO with LLM-generated suggestions and metadata
+ * @throws OpenRouterError if the LLM request fails
  */
 export async function generateGiftIdeas(command: GenerateIdeaCommand): Promise<GenerateIdeaResponseDTO> {
-  // Simulate AI processing delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  // Initialize OpenRouter service
+  const openRouter = createOpenRouterService();
 
-  // Generate mock suggestions
-  const suggestions: IdeaSuggestionDTO[] = generateMockSuggestions();
+  // Build contextual prompt
+  const prompt = buildPrompt(command);
 
-  const response: GenerateIdeaResponseDTO = {
-    suggestions,
+  // Call LLM with structured output
+  const response = await openRouter.chatStructured<{ suggestions: IdeaSuggestionDTO[] }>({
+    messages: [
+      {
+        role: "user",
+        content: prompt,
+      },
+    ],
+    response_format: RESPONSE_FORMAT,
+  });
+
+  // Return formatted response with metadata
+  return {
+    suggestions: response.structured_data.suggestions,
     metadata: {
-      model: "mock-model-v1",
+      model: response.model,
       generated_at: new Date().toISOString(),
     },
   };
-
-  return response;
-}
-
-/**
- * Generates mock suggestions with hardcoded examples
- * This function will be replaced with actual AI integration later
- *
- * @returns Array of 5 mock suggestions
- */
-function generateMockSuggestions(): IdeaSuggestionDTO[] {
-  // Hardcoded mock suggestions for testing
-  const mockSuggestions: IdeaSuggestionDTO[] = [
-    { content: "Personalized photo album - A thoughtful collection of memorable moments" },
-    { content: "Experience voucher - An unforgettable adventure or activity" },
-    { content: "High-quality book set - Carefully curated selection based on interests" },
-    { content: "Artisanal craft item - Unique handmade piece from local artisan" },
-    { content: "Premium subscription service - Year-long access to favorite content or service" },
-  ];
-
-  return mockSuggestions;
 }

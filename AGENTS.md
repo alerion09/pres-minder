@@ -69,6 +69,15 @@ When introducing changes to the project, always follow the directory structure b
 
 - Services live in `src/lib/services/`
 
+**OpenRouter Service:**
+
+- Service class for LLM chat completions via OpenRouter.ai
+- Located in `src/lib/services/openrouter.service.ts` with types in `openrouter.types.ts`
+- Use `createOpenRouterService()` factory function to create instances from environment variables
+- Supports both regular chat and structured JSON responses with schema validation
+- Features: retry logic with exponential backoff, timeout handling, rate limit respect
+- Required env var: `OPENROUTER_API_KEY` (server-side only)
+
 **Database Access:**
 
 - Use `SupabaseClient` type from `src/db/supabase.client.ts`, NOT from `@supabase/supabase-js`
