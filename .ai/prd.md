@@ -65,6 +65,7 @@ Następujące funkcje nie wchodzą w zakres MVP:
 - Tytuł: Rejestracja nowego użytkownika
 - Opis: Jako nowy użytkownik, chcę móc założyć konto za pomocą mojego adresu e-mail i hasła, aby móc zapisywać swoje pomysły na prezenty.
 - Kryteria akceptacji:
+  - Formularz rejestracji znajduje się na dedykowanej stronie rejestracji.
   - Formularz rejestracji zawiera pola na adres e-mail i hasło.
   - System waliduje format adresu e-mail.
   - System informuje o błędzie, jeśli podany e-mail jest już zajęty.
@@ -76,20 +77,18 @@ Następujące funkcje nie wchodzą w zakres MVP:
 - Tytuł: Logowanie do aplikacji
 - Opis: Jako zarejestrowany użytkownik, chcę móc zalogować się na moje konto, aby uzyskać dostęp do moich zapisanych pomysłów.
 - Kryteria akceptacji:
+  - Formularz logowania znajduje się na dedykowanej stronie logowania.
   - Formularz logowania zawiera pola na adres e-mail i hasło.
   - System informuje o błędzie w przypadku podania nieprawidłowych danych logowania.
   - Po udanym logowaniu jestem przekierowany do widoku mojej listy pomysłów.
 
-### US-003: Zmiana hasła
+### US-003: Odzyskiwanie hasła
 
 - ID: US-003
-- Tytuł: Zmiana hasła
-- Opis: Jako użytkownik, chcę zmienić swoje hasło.
+- Tytuł: Odzyskiwanie hasła
+- Opis: Jako użytkownik, chcę odzyskać swoje hasło.
 - Kryteria akceptacji:
-  - W ustawieniach konta znajduje się opcja zmiany hasła.
-  - Formularz zawiera pole aktualne hasło i nowe hasło.
-  - System informuje o błędzie w przypadku podania nieprawidłowych haseł.
-  - Po udanej zmianie hasła dostaję komunikat o powodzeniu zmiany hasła.
+  - Na stronie logowanie znajduje się link do odzyskiwania hasła
 
 ### US-004: Usunięcie konta
 
@@ -160,6 +159,16 @@ Następujące funkcje nie wchodzą w zakres MVP:
   - Po kliku w logo jestem przekierowany na stronę główną (lista pomysłów, ścieżka: '/').
   - Po kliku w ikonę zębatki jestem przekierowany na stronę z ustawieniami konta.
   - Po kliku w ikonę wylogowania następuje wylogowanie z aplikacji i przekierowanie do strony logowania.
+
+### US-010: Bezpieczny dostęp
+
+- ID: US-010
+- Tytuł: Bezpieczny dostęp.
+- Opis: Aby korzystać z możliwości aplikacji, muszę się zalogować.
+- Kryteria akceptacji:
+  - Jeśli nie jestem zalogowany, mogę wejść jedynie na stronę rejestracji i logowania lub odzyskac hasło.
+  - Jeśli nie jestem zalogowany, nie mam dostępu do elementów związanych z pomysłami czy kontem użytkownika.
+  - Jeśli nie jestem zalogowany, to wejście na adres niedozwolony przekierowuje na stronę logowania.
 
 ## 6. Metryki sukcesu
 
