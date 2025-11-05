@@ -6,7 +6,7 @@
 - Strefa autoryzowana (`/`, `/settings`) korzysta z layoutu z górnym paskiem nawigacyjnym, menu profilu, globalnym centrum toastów i portali modalnych.
 - Główny widok `/` (homepage - lista pomysłów) łączy górne filtry, licznik wyników, siatkę kart pomysłów, paginację i pusty stan, korzystając z danych słownikowych buforowanych w pamięci.
 - Modale formularza, podglądu i usuwania działają jako nakładki na `/`, utrzymując focus trap, kontrolując flagi `source` i integrację z `POST/PUT/DELETE /api/ideas`.
-- Widok ustawień `/settings` konsoliduje akcje konta (zmiana hasła, usunięcie konta) i komunikuje krytyczne operacje poprzez ostrzeżenia oraz dodatkowe potwierdzenia.
+- Widok ustawień `/settings` konsoliduje akcje konta (usunięcie konta) i komunikuje krytyczne operacje poprzez ostrzeżenia oraz dodatkowe potwierdzenia.
 
 ## 2. Lista widoków
 
@@ -86,10 +86,10 @@
 
 - Nazwa widoku: Ustawienia konta
 - Ścieżka widoku: `/settings`
-- Główny cel: Pozwolić użytkownikowi zarządzać hasłem oraz trwałym usunięciem konta.
-- Kluczowe informacje do wyświetlenia: Sekcja zmiany hasła (aktualne, nowe, powtórzenie), komunikaty sukcesu, sekcja usunięcia konta z ostrzeżeniem, checkboxem oraz polem potwierdzenia, przycisk „Usuń konto”.
-- Kluczowe komponenty widoku: 'layout ustawień konta', 'nagłówki sekcji', 'formularz zmiany hasła', 'alert inline', 'panel usuwania konta', 'pole wyboru potwierdzenia', 'przycisk ostrzegawczy'.
-- UX, dostępność i względy bezpieczeństwa: Wymuszenie różnicy między starym a nowym hasłem, informowanie o stanie asynchronicznym, dodatkowe potwierdzenia tekstowe, blokada przycisku do czasu spełnienia warunków, jasne komunikaty o skutkach usunięcia.
+- Główny cel: Pozwolić użytkownikowi na trwałe usunięcie konta.
+- Kluczowe informacje do wyświetlenia: Sekcja usunięcia konta z ostrzeżeniem, checkboxem oraz polem potwierdzenia, przycisk „Usuń konto”.
+- Kluczowe komponenty widoku: 'layout ustawień konta', 'nagłówki sekcji', 'panel usuwania konta', 'pole wyboru potwierdzenia', 'przycisk ostrzegawczy'.
+- UX, dostępność i względy bezpieczeństwa: Dodatkowe potwierdzenia tekstowe, informowanie o stanie asynchronicznym, blokada przycisku do czasu spełnienia warunków, jasne komunikaty o skutkach usunięcia.
 
 ## 3. Mapa podróży użytkownika
 
@@ -97,7 +97,7 @@
 - **Powracający użytkownik (US-002 + US-007):** Po logowaniu na `/login` trafia na homepage `/`, które ładuje zapisane filtry, przegląda karty z badge'ami źródła, korzysta z filtrów i paginacji, otwiera podgląd i w razie potrzeby edytuje lub usuwa pomysł.
 - **Tworzenie z AI (US-005):** W modalu formularza uzupełnia dane, uruchamia `Generuj pomysły`, czeka na spinner, przegląda 5 kart, akceptuje jedną z nich, modyfikuje treść (zmienia flagę na `edited-ai`), zapisuje i otrzymuje toast potwierdzający.
 - **Manualne tworzenie lub edycja (US-006 + US-007):** Użytkownik pomija generowanie, wpisuje treść ręcznie, zapisuje pomysł z flagą `manual`, podczas edycji modyfikuje dane i otrzymuje aktualizację listy bez przeładowania.
-- **Zarządzanie kontem (US-003 + US-004):** Z menu profilu wybiera `/settings`, zmienia hasło z walidacją inline i komunikatem sukcesu, lub inicjuje usunięcie konta, zaznacza checkbox ostrzegawczy, wpisuje frazę potwierdzającą, potwierdza i zostaje wylogowany.
+- **Zarządzanie kontem (US-003 + US-004):** Z menu profilu wybiera `/settings`, inicjuje usunięcie konta, zaznacza checkbox ostrzegawczy, wpisuje frazę potwierdzającą, potwierdza i zostaje wylogowany.
 
 ## 4. Układ i struktura nawigacji
 

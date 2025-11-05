@@ -14,7 +14,6 @@ Wybór odpowiedniego prezentu na ważną okazję jest często trudnym i stresuj�
 
 - Użytkownik może założyć konto, podając adres e-mail i hasło.
 - Użytkownik może zalogować się na swoje konto.
-- Użytkownik może skorzystać z funkcji zmiany hasła.
 - Użytkownik ma możliwość trwałego usunięcia swojego konta (hard delete). Operacja ta jest poprzedzona komunikatem informacyjnym i wymaga dodatkowego potwierdzenia.
 
 ### 3.2. Tworzenie i zarządzanie pomysłami na prezenty
