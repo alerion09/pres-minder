@@ -202,3 +202,52 @@ export interface DeleteAccountValidation {
   acknowledged: boolean;
   isValid: boolean;
 }
+
+// ============================================================================
+// Authentication Types
+// ============================================================================
+
+/**
+ * LoginDto - Request body for user login
+ * Used in POST /api/auth/login
+ */
+export interface LoginDto {
+  email: string;
+  password: string;
+}
+
+/**
+ * RegisterDto - Request body for user registration
+ * Used in POST /api/auth/register
+ */
+export interface RegisterDto {
+  email: string;
+  password: string;
+}
+
+/**
+ * PasswordResetRequestDto - Request body for password reset request
+ * Used in POST /api/auth/reset/request
+ */
+export interface PasswordResetRequestDto {
+  email: string;
+}
+
+/**
+ * PasswordUpdateDto - Request body for password update
+ * Used in POST /api/auth/reset/confirm
+ */
+export interface PasswordUpdateDto {
+  password: string;
+  confirmPassword: string;
+}
+
+/**
+ * AuthErrorResponse - Standard error response from auth endpoints
+ */
+export interface AuthErrorResponse {
+  error: string;
+  timestamp: string;
+  route: string;
+  details?: unknown;
+}

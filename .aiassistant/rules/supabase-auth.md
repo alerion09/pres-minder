@@ -2,7 +2,6 @@
 apply: manually
 ---
 
-
 # Supabase Auth Integration with Astro
 
 Use this guide to introduce authentication (sign-up & sign-in) in Astro applications with server-side rendering (SSR) support

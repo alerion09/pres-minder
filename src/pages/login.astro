@@ -1,0 +1,10 @@
+---
+import AuthLayout from "@/layouts/AuthLayout.astro";
+import { LoginForm } from "@/components/auth/LoginForm";
+
+export const prerender = false;
+---
+
+<AuthLayout title="Logowanie - PresMinder">
+  <LoginForm client:only="react" />
+</AuthLayout>
