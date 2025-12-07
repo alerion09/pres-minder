@@ -8,10 +8,11 @@ interface Props {
 
 const { title = "PresMinder" } = Astro.props;
 const currentPath = Astro.url.pathname;
+const user = Astro.locals.user;
 ---
 
 <Layout title={title}>
-  <AppTopBar currentPath={currentPath} />
+  <AppTopBar currentPath={currentPath} userEmail={user?.email} />
   <main class="container mx-auto px-4 py-6">
     <slot />
   </main>

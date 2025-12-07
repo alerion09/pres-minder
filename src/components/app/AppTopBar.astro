@@ -4,9 +4,10 @@ import SettingsLink from "./SettingsLink.astro";
 
 interface Props {
   currentPath: string;
+  userEmail?: string;
 }
 
-const { currentPath } = Astro.props;
+const { currentPath, userEmail } = Astro.props;
 const isSettingsActive = currentPath === "/settings";
 ---
 
@@ -23,10 +24,19 @@ const isSettingsActive = currentPath === "/settings";
       PresMinder
     </a>
 
-    <!-- Navigation Actions -->
-    <div class="flex items-center gap-2">
-      <SettingsLink active={isSettingsActive} />
-      <LogoutButton client:only="react" />
+    <!-- User Info and Navigation Actions -->
+    <div class="flex items-center gap-4">
+      {
+        userEmail && (
+          <span class="hidden text-sm text-muted-foreground md:inline" aria-label="Zalogowany użytkownik">
+            {userEmail}
+          </span>
+        )
+      }
+      <div class="flex items-center gap-2">
+        <SettingsLink active={isSettingsActive} />
+        <LogoutButton client:only="react" />
+      </div>
     </div>
   </nav>
 </header>

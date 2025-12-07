@@ -14,11 +14,16 @@ export default function LogoutButton({ redirectTo = "/" }: LogoutButtonProps) {
     setIsLoading(true);
 
     try {
-      // TODO: Implement actual signOut when auth is ready
-      // await supabaseClient.auth.signOut();
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-      // Mock successful logout for now
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (!response.ok) {
+        throw new Error("Logout failed");
+      }
 
       showSuccessToast("Wylogowano pomyślnie");
 
