@@ -29,7 +29,7 @@ Create `.env` file with required Supabase credentials (based on the snippet belo
 
 ```env
 SUPABASE_URL=your_project_url
-SUPABASE_KEY=your_anon_key
+SUPABASE_PUBLIC_KEY=your_public_key
 ```
 
 For better TypeScript support, create or update `src/env.d.ts`:
@@ -38,7 +38,7 @@ For better TypeScript support, create or update `src/env.d.ts`:
 /// <reference types="astro/client" />
 interface ImportMetaEnv {
   readonly SUPABASE_URL: string;
-  readonly SUPABASE_KEY: string;
+  readonly SUPABASE_PUBLIC_KEY: string;
 }
 
 interface ImportMeta {
@@ -76,7 +76,7 @@ function parseCookieHeader(cookieHeader: string): { name: string; value: string 
 }
 
 export const createSupabaseServerInstance = (context: { headers: Headers; cookies: AstroCookies }) => {
-  const supabase = createServerClient<Database>(import.meta.env.SUPABASE_URL, import.meta.env.SUPABASE_KEY, {
+  const supabase = createServerClient<Database>(import.meta.env.SUPABASE_URL, import.meta.env.SUPABASE_PUBLIC_KEY, {
     cookieOptions,
     cookies: {
       getAll() {

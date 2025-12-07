@@ -133,9 +133,9 @@ Standard odpowiedzi błędów:
 
 ### 3.1. Klienci Supabase
 
-- Istniejący klient: `src/db/supabase.client.ts` (anon key) – pozostaje dla operacji publicznych/bez sesji, ale do autentykacji w SSR potrzebny klient per-request.
+- Istniejący klient: `src/db/supabase.client.ts` (public key) – pozostaje dla operacji publicznych/bez sesji, ale do autentykacji w SSR potrzebny klient per-request.
 - Nowy klient SSR: `src/db/supabase.ssr.ts` (nowy)
-  - Tworzenie przez `@supabase/ssr createServerClient<Database>(SUPABASE_URL, SUPABASE_KEY, { cookies: { get, set, remove } })`.
+  - Tworzenie przez `@supabase/ssr createServerClient<Database>(SUPABASE_URL, SUPABASE_PUBLIC_KEY, { cookies: { get, set, remove } })`.
   - Integracja z Astro middleware w celu korzystania z ciasteczek HttpOnly i utrzymywania sesji.
 - Klient Admin: `src/db/supabase.admin.ts` (nowy)
   - Tworzy klienta z `SUPABASE_SERVICE_ROLE_KEY` (tylko server-side, nigdy w przeglądarce) dla operacji administracyjnych (US-004 delete user).
@@ -244,7 +244,7 @@ Standard odpowiedzi błędów:
 ## 7. Wymagania środowiskowe i konfiguracja
 
 - Zmienne środowiskowe (server-side only):
-  - `SUPABASE_URL`, `SUPABASE_KEY` (istniejące)
+  - `SUPABASE_URL`, `SUPABASE_PUBLIC_KEY` (istniejące)
   - `SUPABASE_SERVICE_ROLE_KEY` – wymagane dla endpointu DELETE konta.
   - `APP_BASE_URL` – do generowania `redirectTo` w reset hasła.
 - Nie ujawniamy wartości w kliencie; admin key używany tylko w kodzie serwerowym.
