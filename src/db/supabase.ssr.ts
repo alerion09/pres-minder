@@ -1,5 +1,6 @@
 import type { AstroCookies } from "astro";
 import { createServerClient, type CookieOptionsWithName } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types.ts";
 
 export const cookieOptions: CookieOptionsWithName = {
@@ -30,4 +31,18 @@ export const createSupabaseServerInstance = (context: { headers: Headers; cookie
   });
 
   return supabase;
+};
+
+/**
+ * Creates a Supabase admin client with service role privileges
+ * WARNING: Only use this for server-side operations that require admin access
+ * Never expose service role key to the client
+ */
+export const createSupabaseAdminClient = () => {
+  return createClient<Database>(import.meta.env.SUPABASE_URL, import.meta.env.SUPABASE_SERVICE_ROLE_KEY, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
 };

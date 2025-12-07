@@ -3,8 +3,15 @@ import AppLayout from "@/layouts/AppLayout.astro";
 import SettingsHeader from "@/components/settings/SettingsHeader.astro";
 import DeleteAccountSection from "@/components/settings/DeleteAccountSection.astro";
 
-// TODO: Get user email from session when auth is implemented
-const userEmail = "user@example.com";
+// Get user email from authenticated session
+const { user } = Astro.locals;
+
+// Redirect to login if not authenticated (additional safety check)
+if (!user) {
+  return Astro.redirect("/login");
+}
+
+const userEmail = user.email;
 ---
 
 <AppLayout title="Ustawienia konta">

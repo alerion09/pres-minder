@@ -1,6 +1,5 @@
 import { useState, useMemo, useCallback, useId } from "react";
 import { AlertTriangle } from "lucide-react";
-import type { DeleteAccountActionResult } from "@/types";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -8,10 +7,9 @@ import { Label } from "@/components/ui/label";
 
 interface DeleteAccountPanelProps {
   userEmail?: string;
-  onRequestDelete?: () => Promise<DeleteAccountActionResult>;
 }
 
-export default function DeleteAccountPanel({ userEmail, onRequestDelete }: DeleteAccountPanelProps) {
+export default function DeleteAccountPanel({ userEmail }: DeleteAccountPanelProps) {
   const [acknowledged, setAcknowledged] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,31 +36,36 @@ export default function DeleteAccountPanel({ userEmail, onRequestDelete }: Delet
     setError(null);
 
     try {
-      // TODO: Integrate with API endpoint /api/account/delete
-      // For now, simulate async operation
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Call the delete account API endpoint
+      const response = await fetch("/api/account/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-      if (onRequestDelete) {
-        const result = await onRequestDelete();
-        if (result.success) {
-          setSuccess(true);
-          setError(null);
-        } else {
-          setError(result.message || "Wystąpił błąd podczas usuwania konta");
-          setSuccess(false);
-        }
-      } else {
-        // Mock success for development
-        console.log("Mock: Account deletion requested");
+      const data = await response.json();
+
+      if (response.ok) {
         setSuccess(true);
+        setError(null);
+
+        // Redirect to login page after 2 seconds
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 2000);
+      } else {
+        setError(data.error || "Wystąpił błąd podczas usuwania konta");
+        setSuccess(false);
       }
     } catch (err) {
+      console.error("Delete account error:", err);
       setError("Wystąpił błąd. Spróbuj ponownie później.");
       setSuccess(false);
     } finally {
       setIsSubmitting(false);
     }
-  }, [isValid, onRequestDelete]);
+  }, [isValid]);
 
   if (success) {
     return (
