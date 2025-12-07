@@ -76,7 +76,15 @@ export function LoginForm() {
       if (!response.ok) {
         // Handle specific error codes
         if (response.status === 401) {
-          setGlobalError("Nieprawidłowy email lub hasło");
+          // Check for specific error type
+          if (data.error === "invalid_credentials") {
+            setGlobalError("Nieprawidłowy email lub hasło");
+          } else {
+            setGlobalError(data.error || "Wystąpił błąd podczas logowania");
+          }
+        } else if (response.status === 422) {
+          // Validation errors from backend
+          setGlobalError("Dane formularza są nieprawidłowe. Sprawdź wprowadzone wartości");
         } else if (response.status === 429) {
           setGlobalError("Zbyt wiele prób logowania. Spróbuj ponownie później");
         } else {
@@ -85,9 +93,14 @@ export function LoginForm() {
         return;
       }
 
-      showSuccessToast("Zalogowano pomyślnie");
-      // Redirect to home page
-      window.location.href = "/";
+      // Success response: { message: "ok" }
+      if (data.message === "ok") {
+        showSuccessToast("Zalogowano pomyślnie");
+        // Redirect to home page
+        window.location.href = "/";
+      } else {
+        setGlobalError("Wystąpił nieoczekiwany błąd podczas logowania");
+      }
     } catch (err) {
       console.error("[LoginForm] Submit error:", err);
       setGlobalError("Wystąpił błąd połączenia. Sprawdź połączenie z internetem");

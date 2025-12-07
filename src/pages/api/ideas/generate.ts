@@ -8,7 +8,7 @@ export const prerender = false;
  * POST /api/ideas/generate
  *
  * Generates gift idea suggestions using AI based on provided hints.
- * Does not save data to database. Authentication and rate limiting will be added later.
+ * Requires authentication. Does not save data to database.
  *
  * Request body (JSON) - all fields optional:
  * - age?: integer 1..500
@@ -22,10 +22,32 @@ export const prerender = false;
  * Responses:
  * - 200: { data: { suggestions: IdeaSuggestionDTO[]; metadata: { model: string; generated_at: string } } }
  * - 400: { error: "Validation error", details: string[] }
+ * - 401: { error: "Unauthorized" }
  * - 500: { error: "Internal server error" }
  */
 export const POST: APIRoute = async (context) => {
-  // 1) Parse JSON body
+  const supabase = context.locals.supabase;
+
+  // 1) Get authenticated user from session
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return new Response(
+      JSON.stringify({
+        error: "Unauthorized",
+        timestamp: new Date().toISOString(),
+        route: "/api/ideas/generate",
+      }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+
+  // 2) Parse JSON body
   let body: unknown;
   try {
     body = await context.request.json();
@@ -46,7 +68,7 @@ export const POST: APIRoute = async (context) => {
     });
   }
 
-  // 2) Validate with Zod
+  // 3) Validate with Zod
   let command;
   try {
     command = parseAndValidateGenerateIdea(body);
@@ -86,7 +108,7 @@ export const POST: APIRoute = async (context) => {
     });
   }
 
-  // 3) Generate ideas via service (currently mocked)
+  // 4) Generate ideas via service
   try {
     const responseData = await generateGiftIdeas(command);
 

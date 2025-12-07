@@ -49,11 +49,13 @@ export function parseAndValidateGetIdeasQuery(query: URLSearchParams | Record<st
  * Fetches paginated ideas with optional filters
  *
  * @param supabase - Supabase client instance
+ * @param userId - User ID to filter ideas by
  * @param params - Validated query parameters
  * @returns Paginated ideas with metadata
  */
 export async function getIdeasForUser(
   supabase: typeof supabaseClient,
+  userId: string,
   params: GetIdeasQueryParams
 ): Promise<PaginatedIdeasDTO> {
   const { page = 1, limit = 20, sort = "created_at", order = "desc", relation_id, occasion_id, source } = params;
@@ -61,9 +63,11 @@ export async function getIdeasForUser(
   // Calculate offset for pagination
   const offset = (page - 1) * limit;
 
-  // Build base query with joins
-  let dataQuery = supabase.from("ideas").select(
-    `
+  // Build base query with joins - FILTER BY USER_ID for security
+  let dataQuery = supabase
+    .from("ideas")
+    .select(
+      `
       id,
       name,
       content,
@@ -80,8 +84,9 @@ export async function getIdeasForUser(
       relations!left(name),
       occasions!left(name)
     `,
-    { count: "exact" }
-  );
+      { count: "exact" }
+    )
+    .eq("user_id", userId);
 
   // Apply optional filters
   if (relation_id !== undefined) {

@@ -19,11 +19,10 @@ type IdeaForBudgetValidation = Pick<Idea, "id" | "name" | "budget_min" | "budget
 /**
  * Zod schema for PUT /api/ideas/:id request body
  * Validates UpdateIdeaCommand with comprehensive business rules for partial updates
- * Note: user_id is required (no authentication)
+ * Note: user_id is now taken from session, not from request body
  */
 export const updateIdeaSchema = z
   .object({
-    user_id: z.string().uuid("User ID must be a valid UUID"),
     name: z
       .string()
       .trim()
@@ -74,9 +73,8 @@ export const updateIdeaSchema = z
   })
   .refine(
     (obj) => {
-      // At least one field besides user_id must be provided
-      const fieldsWithoutUserId = Object.keys(obj).filter((key) => key !== "user_id");
-      return fieldsWithoutUserId.length > 0;
+      // At least one field must be provided for update
+      return Object.keys(obj).length > 0;
     },
     {
       message: "At least one field must be provided for update",
@@ -161,18 +159,20 @@ export async function getIdeaByIdForUser(
  * Performs cross-field budget validation against existing values when only one budget field is updated.
  *
  * @param supabase - Supabase client instance
+ * @param userId - User ID from authenticated session
  * @param id - Idea ID to update
- * @param command - Validated UpdateIdeaCommand with user_id and partial fields
+ * @param command - Validated UpdateIdeaCommand (without user_id) with partial fields
  * @returns Updated idea as IdeaDTO with denormalized relation and occasion names, or null if not found
  * @throws Error if database operation fails, foreign key constraint violated, or budget validation fails
  */
 export async function updateIdea(
   supabase: typeof supabaseClient,
+  userId: string,
   id: number,
-  command: UpdateIdeaCommand
+  command: Omit<UpdateIdeaCommand, "user_id">
 ): Promise<IdeaDTO | null> {
   // 1. Fetch existing idea to verify ownership and get current budget values
-  const existingIdea = await getIdeaByIdForUser(supabase, command.user_id, id);
+  const existingIdea = await getIdeaByIdForUser(supabase, userId, id);
 
   if (!existingIdea) {
     return null;
@@ -222,7 +222,7 @@ export async function updateIdea(
     .from("ideas")
     .update(updatePayload)
     .eq("id", id)
-    .eq("user_id", command.user_id)
+    .eq("user_id", userId)
     .select("id")
     .single();
 

@@ -4,26 +4,66 @@ import { idParamSchema } from "@/lib/validation/common-schemas";
 import { getIdeaById } from "@/lib/services/ideas/get-idea-by-id.service";
 import { parseAndValidateUpdateIdea, updateIdea } from "@/lib/services/ideas/update-idea.service";
 import { deleteIdeaById } from "@/lib/services/ideas/delete-idea.service";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/db/database.types";
 
 export const prerender = false;
 
 /**
+ * Helper function to verify idea ownership
+ * Returns idea if it exists and belongs to the authenticated user
+ */
+async function verifyIdeaOwnership(
+  supabase: SupabaseClient<Database>,
+  ideaId: number,
+  userId: string
+): Promise<boolean> {
+  const { data, error } = await supabase.from("ideas").select("id").eq("id", ideaId).eq("user_id", userId).single();
+
+  if (error || !data) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * GET /api/ideas/:id
  *
- * Fetches a single gift idea by ID.
+ * Fetches a single gift idea by ID for the authenticated user.
  * Returns enriched IdeaDTO with relation and occasion names.
  *
  * @param id - Idea ID (positive integer)
  *
  * @returns 200 - Success with IdeaDTO
  * @returns 400 - Invalid id parameter
- * @returns 404 - Idea not found
+ * @returns 401 - Unauthorized
+ * @returns 404 - Idea not found or doesn't belong to user
  * @returns 500 - Internal server error
  */
 export const GET: APIRoute = async (context) => {
   const supabase = context.locals.supabase;
 
-  // 1. Validate ID parameter
+  // 1. Get authenticated user from session
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return new Response(
+      JSON.stringify({
+        error: "Unauthorized",
+        timestamp: new Date().toISOString(),
+        route: context.url.pathname,
+      }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+
+  // 2. Validate ID parameter
   let validatedId: number;
   try {
     validatedId = idParamSchema.parse(context.params.id);
@@ -61,7 +101,27 @@ export const GET: APIRoute = async (context) => {
     });
   }
 
-  // 2. Fetch idea from database
+  // 3. Verify idea ownership
+  const isOwner = await verifyIdeaOwnership(supabase, validatedId, user.id);
+
+  if (!isOwner) {
+    console.warn("[GET /api/ideas/:id] Idea not found or unauthorized:", {
+      timestamp: new Date().toISOString(),
+      route: context.url.pathname,
+      ideaId: validatedId,
+      userId: user.id,
+    });
+
+    return new Response(JSON.stringify({ error: "Idea not found" }), {
+      status: 404,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "X-Content-Type-Options": "nosniff",
+      },
+    });
+  }
+
+  // 4. Fetch idea from database
   try {
     const idea = await getIdeaById(supabase, validatedId);
     if (!idea) {
@@ -108,20 +168,40 @@ export const GET: APIRoute = async (context) => {
 /**
  * DELETE /api/ideas/:id
  *
- * Deletes a gift idea by ID.
- * Note: Currently no authentication required.
+ * Deletes a gift idea by ID for the authenticated user.
+ * Only the owner can delete their idea.
  *
  * @param id - Idea ID (positive integer)
  *
  * @returns 200 - Success with message
  * @returns 400 - Invalid id parameter
- * @returns 404 - Idea not found
+ * @returns 401 - Unauthorized
+ * @returns 404 - Idea not found or doesn't belong to user
  * @returns 500 - Internal server error
  */
 export const DELETE: APIRoute = async (context) => {
   const supabase = context.locals.supabase;
 
-  // 1. Validate ID parameter
+  // 1. Get authenticated user from session
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return new Response(
+      JSON.stringify({
+        error: "Unauthorized",
+        timestamp: new Date().toISOString(),
+        route: context.url.pathname,
+      }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+
+  // 2. Validate ID parameter
   let validatedId: number;
   try {
     validatedId = idParamSchema.parse(context.params.id);
@@ -159,7 +239,27 @@ export const DELETE: APIRoute = async (context) => {
     });
   }
 
-  // 2. Delete idea from database
+  // 3. Verify idea ownership
+  const isOwner = await verifyIdeaOwnership(supabase, validatedId, user.id);
+
+  if (!isOwner) {
+    console.warn("[DELETE /api/ideas/:id] Idea not found or unauthorized:", {
+      timestamp: new Date().toISOString(),
+      route: context.url.pathname,
+      ideaId: validatedId,
+      userId: user.id,
+    });
+
+    return new Response(JSON.stringify({ error: "Idea not found" }), {
+      status: 404,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "X-Content-Type-Options": "nosniff",
+      },
+    });
+  }
+
+  // 4. Delete idea from database
   try {
     const deleted = await deleteIdeaById(supabase, validatedId);
 
@@ -213,22 +313,42 @@ export const DELETE: APIRoute = async (context) => {
 /**
  * PUT /api/ideas/:id
  *
- * Updates an existing gift idea.
+ * Updates an existing gift idea for the authenticated user.
  * Supports partial updates of all user-editable fields.
- * Note: Currently accepts user_id in request body (no authentication required).
+ * user_id is taken from session, not request body.
  *
  * @param id - Idea ID (positive integer)
- * @param body - UpdateIdeaCommand with user_id (all other fields optional)
+ * @param body - UpdateIdeaCommand (all fields optional, no user_id)
  *
  * @returns 200 - Success with updated IdeaDTO
  * @returns 400 - Validation error with details
+ * @returns 401 - Unauthorized
  * @returns 404 - Idea not found or doesn't belong to user
  * @returns 500 - Internal server error
  */
 export const PUT: APIRoute = async (context) => {
   const supabase = context.locals.supabase;
 
-  // 1. Validate ID parameter
+  // 1. Get authenticated user from session
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return new Response(
+      JSON.stringify({
+        error: "Unauthorized",
+        timestamp: new Date().toISOString(),
+        route: context.url.pathname,
+      }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+
+  // 2. Validate ID parameter
   let validatedId: number;
   try {
     validatedId = idParamSchema.parse(context.params.id);
@@ -272,7 +392,27 @@ export const PUT: APIRoute = async (context) => {
     });
   }
 
-  // 2. Parse and validate request body
+  // 3. Verify idea ownership
+  const isOwner = await verifyIdeaOwnership(supabase, validatedId, user.id);
+
+  if (!isOwner) {
+    console.warn("[PUT /api/ideas/:id] Idea not found or unauthorized:", {
+      timestamp: new Date().toISOString(),
+      route: context.url.pathname,
+      ideaId: validatedId,
+      userId: user.id,
+    });
+
+    return new Response(JSON.stringify({ error: "Idea not found" }), {
+      status: 404,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "X-Content-Type-Options": "nosniff",
+      },
+    });
+  }
+
+  // 4. Parse and validate request body
   let requestBody: unknown;
   try {
     requestBody = await context.request.json();
@@ -343,15 +483,15 @@ export const PUT: APIRoute = async (context) => {
     });
   }
 
-  // 3. Update idea in database
+  // 5. Update idea in database (ownership already verified)
   try {
-    const updatedIdea = await updateIdea(supabase, validatedId, validatedCommand);
+    const updatedIdea = await updateIdea(supabase, user.id, validatedId, validatedCommand);
 
     if (!updatedIdea) {
       console.warn("[PUT /api/ideas/:id] Idea not found:", {
         timestamp: new Date().toISOString(),
         route: context.url.pathname,
-        userId: validatedCommand.user_id,
+        userId: user.id,
         ideaId: validatedId,
       });
 
@@ -379,7 +519,7 @@ export const PUT: APIRoute = async (context) => {
       console.warn("[PUT /api/ideas/:id] Business validation error:", {
         timestamp: new Date().toISOString(),
         route: context.url.pathname,
-        userId: validatedCommand.user_id,
+        userId: user.id,
         ideaId: validatedId,
         message: validationMessage,
       });
@@ -403,7 +543,7 @@ export const PUT: APIRoute = async (context) => {
     console.error("[PUT /api/ideas/:id] Database error:", {
       timestamp: new Date().toISOString(),
       route: context.url.pathname,
-      userId: validatedCommand.user_id,
+      userId: user.id,
       ideaId: validatedId,
       error,
     });

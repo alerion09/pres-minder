@@ -9,10 +9,10 @@ import type { CreateIdeaCommand, IdeaDTO } from "@/types";
 /**
  * Zod schema for POST /api/ideas request body
  * Validates CreateIdeaCommand with comprehensive business rules
+ * Note: user_id is now taken from session, not from request body
  */
 export const createIdeaSchema = z
   .object({
-    user_id: z.string().uuid("User ID must be a valid UUID"),
     name: z
       .string()
       .trim()
@@ -102,16 +102,21 @@ export function parseAndValidateCreateIdea(body: unknown): CreateIdeaCommand {
  * Creates a new gift idea for the specified user
  *
  * @param supabase - Supabase client instance
- * @param command - Validated CreateIdeaCommand including user_id
+ * @param userId - User ID from authenticated session
+ * @param command - Validated CreateIdeaCommand (without user_id)
  * @returns Created idea as IdeaDTO with denormalized relation and occasion names
  * @throws Error if database operation fails or foreign key constraint violated
  */
-export async function createIdea(supabase: typeof supabaseClient, command: CreateIdeaCommand): Promise<IdeaDTO> {
+export async function createIdea(
+  supabase: typeof supabaseClient,
+  userId: string,
+  command: Omit<CreateIdeaCommand, "user_id">
+): Promise<IdeaDTO> {
   // Insert new idea into database
   const { data: insertedIdea, error: insertError } = await supabase
     .from("ideas")
     .insert({
-      user_id: command.user_id,
+      user_id: userId,
       name: command.name,
       content: command.content,
       age: command.age ?? null,

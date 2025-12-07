@@ -2,8 +2,15 @@
 import AppLayout from "@/layouts/AppLayout.astro";
 import { IdeasView } from "@/components/ideas/IdeasView";
 import type { GetIdeasQueryParams, IdeaSource } from "@/types";
+import { getIdeasForUser } from "@/lib/services/ideas/get-ideas.service";
 
 export const prerender = false;
+
+// Get authenticated user from middleware
+const user = Astro.locals.user;
+if (!user) {
+  return Astro.redirect("/login");
+}
 
 // Parse query parameters
 const url = Astro.url;
@@ -14,43 +21,43 @@ const sort = (url.searchParams.get("sort") as GetIdeasQueryParams["sort"]) || "c
 const order = (url.searchParams.get("order") as GetIdeasQueryParams["order"]) || "desc";
 const relationIdParam = url.searchParams.get("relation_id");
 const occasionIdParam = url.searchParams.get("occasion_id");
+const sourceParam = url.searchParams.get("source");
+
 const relationId = relationIdParam ? parseInt(relationIdParam) : undefined;
 const occasionId = occasionIdParam ? parseInt(occasionIdParam) : undefined;
-const source = url.searchParams.get("source") as IdeaSource | undefined;
+const source = sourceParam ? (sourceParam as IdeaSource) : undefined;
 
-// Fetch data from API
-const baseUrl = url.origin;
+// Get Supabase client from middleware
+const supabase = Astro.locals.supabase;
 
-// Build query string for ideas
-const ideasParams = new URLSearchParams({
-  page: page.toString(),
-  limit: limit.toString(),
-  sort,
-  order,
-});
-
-if (relationId) ideasParams.set("relation_id", relationId.toString());
-if (occasionId) ideasParams.set("occasion_id", occasionId.toString());
-if (source) ideasParams.set("source", source);
-
-// Fetch relations, occasions, and ideas in parallel
-const [relationsRes, occasionsRes, ideasRes] = await Promise.all([
-  fetch(`${baseUrl}/api/relations`),
-  fetch(`${baseUrl}/api/occasions`),
-  fetch(`${baseUrl}/api/ideas?${ideasParams.toString()}`),
+// Fetch relations, occasions, and ideas directly from database
+const [relationsRes, occasionsRes] = await Promise.all([
+  supabase.from("relations").select("id, name").order("name", { ascending: true }),
+  supabase.from("occasions").select("id, name").order("name", { ascending: true }),
 ]);
 
-// Handle errors
-if (!relationsRes.ok || !occasionsRes.ok || !ideasRes.ok) {
+// Handle database errors
+if (relationsRes.error || occasionsRes.error) {
+  console.error("[index.astro] Database error:", {
+    relationsError: relationsRes.error,
+    occasionsError: occasionsRes.error,
+  });
   throw new Error("Failed to fetch data");
 }
 
-const { data: relations } = await relationsRes.json();
-const { data: occasions } = await occasionsRes.json();
-const ideasData = await ideasRes.json();
+const relations = relationsRes.data || [];
+const occasions = occasionsRes.data || [];
 
-// Get user ID from environment
-const userId = import.meta.env.SUPABASE_UUID;
+// Fetch ideas using service - only for authenticated user
+const ideasData = await getIdeasForUser(supabase, user.id, {
+  page,
+  limit,
+  sort,
+  order,
+  relation_id: relationId,
+  occasion_id: occasionId,
+  source,
+});
 
 // Prepare initial state for client
 const initialState = {
@@ -73,7 +80,7 @@ const initialState = {
 <AppLayout title="Moje pomysły">
   <IdeasView
     client:load
-    userId={userId}
+    userId={user.id}
     initialIdeas={initialState.ideas}
     initialPagination={initialState.pagination}
     initialFilters={initialState.filters}

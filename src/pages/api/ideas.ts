@@ -26,6 +26,25 @@ export const prerender = false;
 export const GET: APIRoute = async (context) => {
   const supabase = context.locals.supabase;
 
+  // Get authenticated user from session
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return new Response(
+      JSON.stringify({
+        error: "Unauthorized",
+        timestamp: new Date().toISOString(),
+        route: "/api/ideas",
+      }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+
   // Parse and validate query parameters
   let validatedParams;
   try {
@@ -69,9 +88,9 @@ export const GET: APIRoute = async (context) => {
     });
   }
 
-  // Fetch ideas
+  // Fetch ideas for authenticated user only
   try {
-    const result = await getIdeasForUser(supabase, validatedParams);
+    const result = await getIdeasForUser(supabase, user.id, validatedParams);
 
     return new Response(JSON.stringify(result), {
       status: 200,
@@ -99,11 +118,10 @@ export const GET: APIRoute = async (context) => {
 /**
  * POST /api/ideas
  *
- * Creates a new gift idea for the specified user.
- * Note: Currently accepts user_id in request body (no authentication required).
+ * Creates a new gift idea for the authenticated user.
+ * Requires valid session. user_id is taken from session, not request body.
  *
  * Request body (JSON):
- * - user_id: string (UUID)
  * - name: string (min 2, max 255)
  * - content: string (1..10000)
  * - age?: integer 1..500
@@ -118,10 +136,30 @@ export const GET: APIRoute = async (context) => {
  * Responses:
  * - 201: { data: IdeaDTO }
  * - 400: { error: "Validation error", details: string[] }
+ * - 401: { error: "Unauthorized" }
  * - 500: { error: "Internal server error" }
  */
 export const POST: APIRoute = async (context) => {
   const supabase = context.locals.supabase;
+
+  // Get authenticated user from session
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return new Response(
+      JSON.stringify({
+        error: "Unauthorized",
+        timestamp: new Date().toISOString(),
+        route: "/api/ideas",
+      }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
 
   // 1) Parse JSON body
   let body: unknown;
@@ -181,9 +219,9 @@ export const POST: APIRoute = async (context) => {
     });
   }
 
-  // 3) Create idea via service
+  // 3) Create idea via service for authenticated user
   try {
-    const ideaDto = await createIdea(supabase, command);
+    const ideaDto = await createIdea(supabase, user.id, command);
 
     return new Response(JSON.stringify({ data: ideaDto }), {
       status: 201,
