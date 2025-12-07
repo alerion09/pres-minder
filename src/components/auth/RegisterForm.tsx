@@ -157,7 +157,7 @@ export function RegisterForm() {
             type="password"
             value={formData.password}
             onChange={(e) => handleFieldChange("password", e.target.value)}
-            placeholder="Minimum 8 znaków"
+            placeholder="Podaj hasło"
             disabled={isPending}
             aria-invalid={!!errors.password}
             aria-describedby={errors.password ? `${passwordId}-error` : undefined}
