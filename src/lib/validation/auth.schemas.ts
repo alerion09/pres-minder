@@ -14,9 +14,18 @@ export const AuthEmailSchema = z.string().min(1, "Email jest wymagany").email("N
 
 /**
  * Password validation schema
- * Minimum 8 characters required
+ * Requirements:
+ * - Minimum 8 characters
+ * - At least one digit
+ * - At least one uppercase letter
+ * - At least one special character
  */
-export const AuthPasswordSchema = z.string().min(8, "Hasło musi mieć co najmniej 8 znaków");
+export const AuthPasswordSchema = z
+  .string()
+  .min(8, "Hasło musi mieć co najmniej 8 znaków")
+  .regex(/[0-9]/, "Hasło musi zawierać co najmniej jedną cyfrę")
+  .regex(/[A-Z]/, "Hasło musi zawierać co najmniej jedną dużą literę")
+  .regex(/[^a-zA-Z0-9]/, "Hasło musi zawierać co najmniej jeden znak specjalny");
 
 /**
  * Login form validation schema
@@ -29,10 +38,16 @@ export const LoginSchema = z.object({
 /**
  * Registration form validation schema
  */
-export const RegisterSchema = z.object({
-  email: AuthEmailSchema,
-  password: AuthPasswordSchema,
-});
+export const RegisterSchema = z
+  .object({
+    email: AuthEmailSchema,
+    password: AuthPasswordSchema,
+    confirmPassword: z.string().min(1, "Potwierdzenie hasła jest wymagane"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Hasła muszą być identyczne",
+    path: ["confirmPassword"],
+  });
 
 /**
  * Password reset request validation schema

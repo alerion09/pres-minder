@@ -133,6 +133,9 @@ export function PasswordUpdateForm() {
               {errors.password}
             </p>
           )}
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Hasło musi zawierać: min. 8 znaków, cyfrę, dużą literę i znak specjalny
+          </p>
         </div>
 
         {/* Confirm Password Field */}

@@ -12,6 +12,7 @@ export function RegisterForm() {
   const [formData, setFormData] = useState<RegisterDto>({
     email: "",
     password: "",
+    confirmPassword: "",
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof RegisterDto, string>>>({});
@@ -20,6 +21,7 @@ export function RegisterForm() {
 
   const emailId = useId();
   const passwordId = useId();
+  const confirmPasswordId = useId();
 
   const handleFieldChange = (field: keyof RegisterDto, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -166,7 +168,32 @@ export function RegisterForm() {
               {errors.password}
             </p>
           )}
-          <p className="text-xs text-slate-500 dark:text-slate-400">Hasło musi mieć co najmniej 8 znaków</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Hasło musi zawierać: min. 8 znaków, cyfrę, dużą literę i znak specjalny
+          </p>
+        </div>
+
+        {/* Confirm Password Field */}
+        <div className="space-y-2">
+          <Label htmlFor={confirmPasswordId}>
+            Powtórz hasło <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            id={confirmPasswordId}
+            type="password"
+            value={formData.confirmPassword}
+            onChange={(e) => handleFieldChange("confirmPassword", e.target.value)}
+            placeholder="Powtórz hasło"
+            disabled={isPending}
+            aria-invalid={!!errors.confirmPassword}
+            aria-describedby={errors.confirmPassword ? `${confirmPasswordId}-error` : undefined}
+            autoComplete="new-password"
+          />
+          {errors.confirmPassword && (
+            <p id={`${confirmPasswordId}-error`} className="text-sm text-destructive">
+              {errors.confirmPassword}
+            </p>
+          )}
         </div>
       </div>
 
