@@ -64,8 +64,47 @@ The application will be available at `http://localhost:3000` (default Astro port
 
 ## Testing
 
-- Unit & integration: Vitest with Testing Library for React components
-- End-to-end: Playwright (Chromium/Firefox, headless or headed with trace capture)
+### Technologies
+
+- **Vitest 4** - Unit and integration testing framework
+- **Testing Library (React)** - React component testing utilities
+- **Playwright** - End-to-end testing framework
+
+### Test Structure
+
+```
+pres-minder/
+├── src/
+│   ├── tests/              # Unit and integration tests
+│   │   ├── unit/           # Unit tests
+│   │   └── integration/    # Integration tests
+│   └── components/
+│       └── **/*.test.tsx   # Component tests
+├── e2e/                    # E2E tests (Playwright)
+│   ├── fixtures/           # Test data
+│   ├── pages/              # Page Object Models
+│   └── *.spec.ts           # E2E test files
+```
+
+### Commands
+
+#### Unit & Integration Tests (Vitest)
+
+```bash
+npm run test:unit          # Run all unit tests
+npm run test:unit:watch    # Watch mode (auto-refresh)
+npm run test:unit:ui       # Visual UI mode
+npm run test:coverage      # Generate coverage report
+```
+
+#### End-to-End Tests (Playwright)
+
+```bash
+npm run test:e2e           # Run all E2E tests
+npm run test:e2e:ui        # Visual UI mode
+npm run test:e2e:debug     # Debug mode (step-by-step)
+npm run test:e2e:codegen   # Record tests interactively
+```
 
 ## License
 

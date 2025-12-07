@@ -25,3 +25,12 @@ pnpm-debug.log*
 
 # ai temp files
 .ai-temp
+
+# test outputs
+coverage/
+playwright-report/
+test-results/
+.nyc_output/
+
+# playwright browsers
+.playwright/
