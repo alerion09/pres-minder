@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { GenerateIdeaCommand, GenerateIdeaResponseDTO, IdeaSuggestionDTO } from "@/types";
-import { createOpenRouterService } from "../openrouter.service";
-import type { ResponseFormat } from "../openrouter.types";
+import { createOpenRouterService } from "@/lib/services/openrouter/openrouter.service";
+import type { ResponseFormat } from "@/lib/types/openrouter.types";
 
 // ============================================================================
 // Validation Schema

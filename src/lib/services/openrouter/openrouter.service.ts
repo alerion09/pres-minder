@@ -8,8 +8,8 @@ import type {
   OpenRouterConfig,
   OpenRouterConfigOverrides,
   ResponseFormat,
-} from "./openrouter.types";
-import { OpenRouterError, OpenRouterErrorType } from "./openrouter.types";
+} from "@/lib/types/openrouter.types";
+import { OpenRouterError, OpenRouterErrorType } from "@/lib/types/openrouter.types";
 
 const DEFAULT_CONFIG: Omit<OpenRouterConfig, "apiKey"> = {
   baseUrl: "https://openrouter.ai/api/v1",

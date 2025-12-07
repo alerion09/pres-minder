@@ -72,7 +72,7 @@ When introducing changes to the project, always follow the directory structure b
 **OpenRouter Service:**
 
 - Service class for LLM chat completions via OpenRouter.ai
-- Located in `src/lib/services/openrouter.service.ts` with types in `openrouter.types.ts`
+- Located in `src/lib/services/openrouter/openrouter.service.ts` with types in `src/lib/types/openrouter.types.ts`
 - Use `createOpenRouterService()` factory function to create instances from environment variables
 - Supports both regular chat and structured JSON responses with schema validation
 - Features: retry logic with exponential backoff, timeout handling, rate limit respect
