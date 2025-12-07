@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -340,6 +347,9 @@ export function IdeaFormDialog({
         <div className="flex-1 overflow-y-auto px-6 pt-6">
           <DialogHeader className="mb-6">
             <DialogTitle>{mode === "create" ? "Dodaj nowy pomysł" : "Edytuj pomysł"}</DialogTitle>
+            <DialogDescription className="sr-only">
+              {mode === "create" ? "Formularz dodawania pomysłu" : "Formularz edycji pomysłu"}
+            </DialogDescription>
           </DialogHeader>
 
           <form id="idea-form" onSubmit={handleSubmit} noValidate className="space-y-6 pb-6">
