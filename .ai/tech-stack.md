@@ -22,3 +22,8 @@ CI/CD i Hosting:
 
 - Github Actions do tworzenia pipeline’ów CI/CD
 - DigitalOcean do hostowania aplikacji za pośrednictwem obrazu docker
+
+Testy:
+
+- Testy jednostkowe i integracyjne: Vitest + Testing Library (React)
+- Testy E2E: Playwright (Chromium/Firefox, headless/headful, trace)

@@ -62,6 +62,11 @@ The application will be available at `http://localhost:3000` (default Astro port
 - **`npm run lint:fix`** - Run ESLint and automatically fix issues
 - **`npm run format`** - Format code using Prettier
 
+## Testing
+
+- Unit & integration: Vitest with Testing Library for React components
+- End-to-end: Playwright (Chromium/Firefox, headless or headed with trace capture)
+
 ## License
 
 MIT
