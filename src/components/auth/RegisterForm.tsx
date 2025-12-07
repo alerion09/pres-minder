@@ -85,9 +85,16 @@ export function RegisterForm() {
         return;
       }
 
-      showSuccessToast("Konto zostało utworzone pomyślnie");
-      // Redirect to home page
-      window.location.href = "/";
+      // Check if email verification is required
+      if (data.requiresEmailVerification) {
+        showSuccessToast("Konto zostało utworzone. Sprawdź swoją skrzynkę email i potwierdź adres");
+        // Redirect to login page with info message
+        window.location.href = "/login";
+      } else {
+        showSuccessToast("Konto zostało utworzone pomyślnie");
+        // Redirect to home page
+        window.location.href = "/";
+      }
     } catch (err) {
       console.error("[RegisterForm] Submit error:", err);
       setGlobalError("Wystąpił błąd połączenia. Sprawdź połączenie z internetem");
@@ -101,7 +108,8 @@ export function RegisterForm() {
       <div className="space-y-4">
         <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">Rejestracja</h2>
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          Utwórz nowe konto, aby zacząć korzystać z PresMinder
+          Utwórz nowe konto, aby zacząć korzystać z PresMinder. Po rejestracji otrzymasz email z linkiem
+          potwierdzającym.
         </p>
       </div>
 
