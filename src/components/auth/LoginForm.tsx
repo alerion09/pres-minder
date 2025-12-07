@@ -158,7 +158,7 @@ export function LoginForm() {
             type="password"
             value={formData.password}
             onChange={(e) => handleFieldChange("password", e.target.value)}
-            placeholder="••••••••"
+            placeholder="Podaj hasło"
             disabled={isPending}
             aria-invalid={!!errors.password}
             aria-describedby={errors.password ? `${passwordId}-error` : undefined}
