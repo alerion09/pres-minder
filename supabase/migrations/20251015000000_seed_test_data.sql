@@ -1,18 +1,66 @@
--- migration: seed_test_ideas
--- purpose: add 3 test entries to the ideas table for development and testing
--- affected tables: ideas
+-- migration: seed_test_data
+-- purpose: add test entries for development and testing
+-- affected tables: ideas, auth.users
 -- notes:
---   - uses a test user_id that should be replaced with actual auth user id in production
+--   - creates a test user for development
 --   - includes examples of different idea sources (manual, ai, edited-ai)
 --   - demonstrates various combinations of optional fields
---   - references existing relations and occasions from seed data
+
+-- ============================================================================
+-- create test user for development
+-- ============================================================================
+
+-- insert test user into auth.users (for development only)
+-- email: test@example.com
+-- password: Password123! (8+ chars, 1 special char, 1 uppercase, 1 digit)
+insert into auth.users (
+  id,
+  instance_id,
+  aud,
+  role,
+  email,
+  encrypted_password,
+  email_confirmed_at,
+  created_at,
+  updated_at,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  is_super_admin,
+  confirmation_token,
+  email_change_token_new,
+  email_change_token_current,
+  email_change,
+  recovery_token,
+  reauthentication_token,
+  is_sso_user,
+  is_anonymous
+) values (
+  '00000000-0000-0000-0000-000000000000',
+  '00000000-0000-0000-0000-000000000000',
+  'authenticated',
+  'authenticated',
+  'test@example.com',
+  '$2y$10$ed0l2OG4tRVm/y976t7b3OU00l790mZ7k7qSNySh7jSHyg3q885ci',
+  now(),
+  now(),
+  now(),
+  '{"provider":"email","providers":["email"]}',
+  '{}',
+  false,
+  '',
+  '',
+  '',
+  '',
+  '',
+  '',
+  false,
+  false
+)
+on conflict (id) do nothing;
 
 -- ============================================================================
 -- test data for ideas table
 -- ============================================================================
-
--- note: replace '00000000-0000-0000-0000-000000000000' with actual user_id from auth.users
--- you can get a real user_id by running: select id from auth.users limit 1;
 
 insert into ideas (
   user_id,
@@ -37,8 +85,8 @@ insert into ideas (
     'Active lifestyle enthusiast who runs marathons and loves gadgets',
     200.00,
     400.00,
-    (select id from relations where name = 'friend'),
-    (select id from occasions where name = 'birthday'),
+    (select id from relations where code = 'friend'),
+    (select id from occasions where code = 'birthday'),
     'manual'
   ),
 
@@ -52,8 +100,8 @@ insert into ideas (
     null,
     50.00,
     100.00,
-    (select id from relations where name = 'parent'),
-    (select id from occasions where name = 'anniversary'),
+    (select id from relations where code = 'parent'),
+    (select id from occasions where code = 'anniversary'),
     'ai'
   ),
 
@@ -67,7 +115,7 @@ insert into ideas (
     'Coffee enthusiast who enjoys trying new flavors',
     150.00,
     250.00,
-    (select id from relations where name = 'colleague'),
-    (select id from occasions where name = 'christmas'),
+    (select id from relations where code = 'colleague_male'),
+    (select id from occasions where code = 'christmas'),
     'edited-ai'
   );

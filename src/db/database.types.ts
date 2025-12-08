@@ -88,14 +88,17 @@ export interface Database {
       };
       occasions: {
         Row: {
+          code: string;
           id: number;
           name: string;
         };
         Insert: {
+          code: string;
           id?: number;
           name: string;
         };
         Update: {
+          code?: string;
           id?: number;
           name?: string;
         };
@@ -103,14 +106,17 @@ export interface Database {
       };
       relations: {
         Row: {
+          code: string;
           id: number;
           name: string;
         };
         Insert: {
+          code: string;
           id?: number;
           name: string;
         };
         Update: {
+          code?: string;
           id?: number;
           name?: string;
         };
