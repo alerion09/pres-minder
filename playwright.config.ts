@@ -16,6 +16,9 @@ export default defineConfig({
   // Test directory
   testDir: "./e2e",
 
+  // Global teardown - runs after all tests complete
+  globalTeardown: "./e2e/global.teardown.ts",
+
   // Run tests in files in parallel
   fullyParallel: true,
 
