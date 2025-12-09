@@ -1,18 +1,18 @@
 import { type Page, type Locator } from "@playwright/test";
+import { BasePage } from "./BasePage";
 
 /**
  * Page Object Model for Login Page
  * Implements POM pattern for maintainable E2E tests
  */
-export class LoginPage {
-  readonly page: Page;
+export class LoginPage extends BasePage {
   readonly emailInput: Locator;
   readonly passwordInput: Locator;
   readonly submitButton: Locator;
   readonly errorMessage: Locator;
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
 
     // Locators for form elements
     this.emailInput = page.locator('input[type="email"]');
@@ -25,7 +25,8 @@ export class LoginPage {
    * Navigate to login page
    */
   async goto() {
-    await this.page.goto("/login");
+    await super.goto("/login");
+    await this.waitForLoad();
   }
 
   /**
@@ -52,6 +53,13 @@ export class LoginPage {
   }
 
   /**
+   * Wait for successful login (redirect to home page)
+   */
+  async waitForLoginSuccess(): Promise<void> {
+    await this.page.waitForURL("/", { timeout: 10000 });
+  }
+
+  /**
    * Check if error message is visible
    */
   async hasError(): Promise<boolean> {
@@ -63,5 +71,20 @@ export class LoginPage {
    */
   async getErrorText(): Promise<string> {
     return (await this.errorMessage.textContent()) || "";
+  }
+
+  /**
+   * Check if submit button is disabled
+   */
+  async isSubmitDisabled(): Promise<boolean> {
+    return await this.submitButton.isDisabled();
+  }
+
+  /**
+   * Check if form is in loading state
+   */
+  async isLoading(): Promise<boolean> {
+    const buttonText = await this.submitButton.textContent();
+    return buttonText?.includes("Logowanie...") || false;
   }
 }

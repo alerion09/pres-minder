@@ -110,9 +110,11 @@ export function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-6">
+    <form onSubmit={handleSubmit} noValidate className="space-y-6" data-test-id="login-form">
       <div className="space-y-4">
-        <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">Logowanie</h2>
+        <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-50" data-test-id="login-heading">
+          Logowanie
+        </h2>
         <p className="text-sm text-slate-600 dark:text-slate-400">Wprowadź swoje dane, aby się zalogować</p>
       </div>
 

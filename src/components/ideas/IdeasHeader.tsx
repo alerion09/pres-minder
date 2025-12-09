@@ -12,7 +12,7 @@ export function IdeasHeader({ onCreate }: IdeasHeaderProps) {
           <h1 className="text-3xl font-bold mb-2">Moje pomysły</h1>
           <p className="text-muted-foreground">Zarządzaj swoimi pomysłami na prezenty</p>
         </div>
-        <Button onClick={onCreate} size="lg" className="shrink-0">
+        <Button onClick={onCreate} size="lg" className="shrink-0" data-test-id="create-idea-button">
           Dodaj nowy pomysł
         </Button>
       </div>

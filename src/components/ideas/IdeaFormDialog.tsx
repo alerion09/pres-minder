@@ -343,7 +343,10 @@ export function IdeaFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={(newOpen) => !isPending && onOpenChange(newOpen)}>
-      <DialogContent className="w-full sm:max-w-lg max-h-[90vh] flex flex-col gap-0 p-0">
+      <DialogContent
+        className="w-full sm:max-w-lg max-h-[90vh] flex flex-col gap-0 p-0"
+        data-test-id="idea-form-dialog"
+      >
         <div className="flex-1 overflow-y-auto px-6 pt-6">
           <DialogHeader className="mb-6">
             <DialogTitle>{mode === "create" ? "Dodaj nowy pomysł" : "Edytuj pomysł"}</DialogTitle>
@@ -366,6 +369,7 @@ export function IdeaFormDialog({
                 disabled={isPending}
                 aria-invalid={!!errors.name}
                 aria-describedby={errors.name ? "name-error" : undefined}
+                data-test-id="idea-name-input"
               />
               {errors.name && (
                 <p id="name-error" className="text-sm text-destructive">
@@ -389,6 +393,7 @@ export function IdeaFormDialog({
                     aria-label="Budżet minimalny w PLN"
                     aria-invalid={!!errors.budget_min}
                     aria-describedby={errors.budget_min ? "budget_min-error" : undefined}
+                    data-test-id="idea-budget-min-input"
                   />
                   {errors.budget_min && (
                     <p id="budget_min-error" className="text-sm text-destructive">
@@ -411,6 +416,7 @@ export function IdeaFormDialog({
                     aria-label="Budżet maksymalny w PLN"
                     aria-invalid={!!errors.budget_max}
                     aria-describedby={errors.budget_max ? "budget_max-error" : undefined}
+                    data-test-id="idea-budget-max-input"
                   />
                   {errors.budget_max && (
                     <p id="budget_max-error" className="text-sm text-destructive">
@@ -429,7 +435,7 @@ export function IdeaFormDialog({
                   onValueChange={(val) => handleFieldChange("relation_id", val)}
                   disabled={isPending}
                 >
-                  <SelectTrigger id="relation_id" className="w-full">
+                  <SelectTrigger id="relation_id" className="w-full" data-test-id="idea-relation-select">
                     <SelectValue placeholder="Wybierz relację" />
                   </SelectTrigger>
                   <SelectContent>
@@ -449,7 +455,7 @@ export function IdeaFormDialog({
                   onValueChange={(val) => handleFieldChange("occasion_id", val)}
                   disabled={isPending}
                 >
-                  <SelectTrigger id="occasion_id" className="w-full">
+                  <SelectTrigger id="occasion_id" className="w-full" data-test-id="idea-occasion-select">
                     <SelectValue placeholder="Wybierz okazję" />
                   </SelectTrigger>
                   <SelectContent>
@@ -476,6 +482,7 @@ export function IdeaFormDialog({
                   aria-invalid={!!errors.age}
                   aria-describedby={errors.age ? "age-error" : undefined}
                   className="w-full"
+                  data-test-id="idea-age-input"
                 />
                 {errors.age && (
                   <p id="age-error" className="text-sm text-destructive">
@@ -499,6 +506,7 @@ export function IdeaFormDialog({
                   disabled={isPending}
                   aria-invalid={!!errors.interests}
                   aria-describedby={errors.interests ? "interests-error" : undefined}
+                  data-test-id="idea-interests-textarea"
                 />
                 {errors.interests && (
                   <p id="interests-error" className="text-sm text-destructive">
@@ -519,6 +527,7 @@ export function IdeaFormDialog({
                   disabled={isPending}
                   aria-invalid={!!errors.person_description}
                   aria-describedby={errors.person_description ? "person_description-error" : undefined}
+                  data-test-id="idea-person-description-textarea"
                 />
                 {errors.person_description && (
                   <p id="person_description-error" className="text-sm text-destructive">
@@ -543,6 +552,7 @@ export function IdeaFormDialog({
                 disabled={isPending}
                 aria-invalid={!!errors.content}
                 aria-describedby={errors.content ? "content-error" : undefined}
+                data-test-id="idea-content-textarea"
               />
               {errors.content && (
                 <p id="content-error" className="text-sm text-destructive">
@@ -552,7 +562,7 @@ export function IdeaFormDialog({
             </div>
 
             {/* Panel AI */}
-            <div className="space-y-3 border-t pt-4">
+            <div className="space-y-3 border-t pt-4" data-test-id="ai-suggestions-section">
               <div className="flex items-center justify-between">
                 <Label>Sugestie AI</Label>
                 <Button
@@ -561,13 +571,14 @@ export function IdeaFormDialog({
                   disabled={isGenerating || isPending}
                   variant="outline"
                   size="sm"
+                  data-test-id="generate-ai-ideas-button"
                 >
                   {isGenerating ? "Generowanie..." : "Wygeneruj pomysły"}
                 </Button>
               </div>
 
               {aiSuggestions.length > 0 && (
-                <div className="space-y-2">
+                <div className="space-y-2" data-test-id="ai-suggestions-list">
                   <p className="text-sm text-muted-foreground">Kliknij na pomysł, aby go użyć:</p>
                   {aiSuggestions.map((suggestion, idx) => (
                     <Card
@@ -576,6 +587,7 @@ export function IdeaFormDialog({
                         clickedCardIndex === idx ? "opacity-0 scale-95 translate-x-2" : "opacity-100 scale-100"
                       }`}
                       onClick={() => handleAcceptSuggestion(suggestion, idx)}
+                      data-test-id={`ai-suggestion-card-${idx}`}
                     >
                       <CardContent className="p-3">
                         <p className="text-sm">{suggestion}</p>
@@ -590,10 +602,16 @@ export function IdeaFormDialog({
 
         {/* Footer - always at bottom */}
         <DialogFooter className="flex-shrink-0 bg-background border-t px-6 py-4 rounded-b-lg">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isPending}
+            data-test-id="idea-form-cancel-button"
+          >
             Anuluj
           </Button>
-          <Button type="submit" form="idea-form" disabled={isPending}>
+          <Button type="submit" form="idea-form" disabled={isPending} data-test-id="idea-form-submit-button">
             {isPending ? "Zapisywanie..." : mode === "create" ? "Dodaj pomysł" : "Zapisz zmiany"}
           </Button>
         </DialogFooter>

@@ -18,6 +18,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
+    "test:e2e:headed": "playwright test --headed --workers=1",
+    "test:e2e:report": "playwright show-report",
     "test:e2e:codegen": "playwright codegen http://localhost:3000",
     "dev:e2e": "astro dev --mode test"
   },
@@ -40,6 +42,7 @@
     "astro": "^5.13.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^17.2.3",
     "lucide-react": "^0.487.0",
     "next-themes": "^0.4.6",
     "react": "^19.1.1",

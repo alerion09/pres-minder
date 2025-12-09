@@ -1,9 +1,17 @@
 import { defineConfig, devices } from "@playwright/test";
+import dotenv from "dotenv";
+import path from "path";
+
+/**
+ * Load test environment variables
+ */
+dotenv.config({ path: path.resolve(process.cwd(), ".env.test") });
 
 /**
  * Playwright E2E Testing Configuration
  * @see https://playwright.dev/docs/test-configuration
  */
+
 export default defineConfig({
   // Test directory
   testDir: "./e2e",
