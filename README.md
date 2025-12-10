@@ -105,7 +105,3 @@ npm run test:e2e:ui        # Visual UI mode
 npm run test:e2e:debug     # Debug mode (step-by-step)
 npm run test:e2e:codegen   # Record tests interactively
 ```
-
-## License
-
-MIT
