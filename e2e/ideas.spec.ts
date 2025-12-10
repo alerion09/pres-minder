@@ -8,7 +8,7 @@ import { IdeaFormDialog } from "./pages/IdeaFormDialog";
  *
  * Prerequisites:
  * - Application must be running on http://localhost:3000
- * - .env.test must contain TEST_USER_EMAIL and TEST_USER_PASSWORD
+ * - .env.test must contain E2E_USERNAME, E2E_PASSWORD, and E2E_USERNAME_ID
  */
 
 test.describe("Ideas Management", () => {
