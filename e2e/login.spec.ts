@@ -90,7 +90,7 @@ test.describe("Login Page", () => {
   });
 });
 
-test.describe("Login Page - Visual Tests", () => {
+test.describe("Login Page - Visual Tests", { tag: "@visual" }, () => {
   test("should match login page screenshot", async ({ page }) => {
     await page.goto("/login");
 
