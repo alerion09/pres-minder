@@ -103,7 +103,8 @@ const GIFT_IDEAS_SCHEMA = {
         properties: {
           content: {
             type: "string",
-            description: "A detailed gift idea description including the gift name and why it's suitable",
+            description:
+              "JEDEN szczegółowy opis POJEDYNCZEGO pomysłu na prezent, zawierający nazwę prezentu i dlaczego jest odpowiedni. NIE LISTA, tylko jeden konkretny pomysł.",
           },
         },
         required: ["content"],
@@ -111,6 +112,8 @@ const GIFT_IDEAS_SCHEMA = {
       },
       minItems: 5,
       maxItems: 5,
+      description:
+        "Tablica zawierająca dokładnie 5 osobnych obiektów, gdzie każdy obiekt reprezentuje JEDEN unikalny pomysł na prezent",
     },
   },
   required: ["suggestions"],
@@ -142,7 +145,8 @@ const RESPONSE_FORMAT: ResponseFormat = {
  */
 function buildPrompt(command: GenerateIdeaCommand): string {
   const parts: string[] = [
-    "Jesteś kreatywnym asystentem rekomendacji prezentów. Wygeneruj 5 unikalnych i przemyślanych pomysłów na prezenty na podstawie poniższych informacji o odbiorcy.",
+    "Jesteś kreatywnym asystentem rekomendacji prezentów. Wygeneruj dokładnie 5 różnych, unikalnych pomysłów na prezenty na podstawie poniższych informacji o odbiorcy.",
+    "\n\nKRYTYCZNE WYMAGANIE: Zwróć tablicę zawierającą 5 osobnych obiektów. Każdy obiekt w tablicy musi zawierać TYLKO JEDEN konkretny pomysł na prezent. NIE GENERUJ listy pomysłów w jednym obiekcie - każdy pomysł to osobny element tablicy.",
     "\n\nWAŻNE: Wszystkie odpowiedzi MUSZĄ być w języku polskim, niezależnie od języka podanych informacji.",
     "\n\nInformacje o odbiorcy:",
   ];
@@ -178,11 +182,12 @@ function buildPrompt(command: GenerateIdeaCommand): string {
   }
 
   parts.push(
-    "\n\nDla każdego pomysłu na prezent podaj szczegółowy opis, który zawiera:",
+    "\n\nDla każdego z 5 pomysłów stwórz JEDEN osobny obiekt zawierający szczegółowy opis, który zawiera:",
     "\n1. Nazwę/typ prezentu",
     "\n2. Dlaczego jest odpowiedni dla tej osoby",
     "\n3. Jak pasuje do jej zainteresowań lub okazji",
     "\n\nKażda sugestia powinna być unikalna, kreatywna i spersonalizowana. Upewnij się, że wszystkie propozycje mieszczą się w podanym budżecie (jeśli został określony).",
+    "\n\nPOWTÓRZENIE: Zwróć dokładnie 5 obiektów w tablicy 'suggestions'. Każdy obiekt reprezentuje JEDEN pomysł, nie listę pomysłów.",
     "\n\nPamiętaj: Odpowiedź MUSI być po polsku!"
   );
 
