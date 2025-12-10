@@ -109,41 +109,133 @@ create index idx_ideas_source on ideas(source);
 -- 5. row level security policies
 -- ============================================================================
 
--- rls policies for relations table (dictionary)
-create policy "authenticated users can view relations"
+-- ----------------------------------------------------------------------------
+-- 5.1 rls policies for relations table (dictionary)
+-- ----------------------------------------------------------------------------
+
+-- select policy for anonymous users
+-- rationale: dictionary data should be publicly readable for form dropdowns
+create policy "anon_select_relations"
+  on relations
+  for select
+  to anon
+  using (true);
+
+-- select policy for authenticated users
+-- rationale: authenticated users also need full read access to relation types
+create policy "authenticated_select_relations"
   on relations
   for select
   to authenticated
   using (true);
 
--- rls policies for occasions table (dictionary)
-create policy "authenticated users can view occasions"
+-- insert policy for authenticated users
+-- rationale: regular users should not modify dictionary data
+-- this policy blocks all user inserts (only backend can modify)
+create policy "authenticated_insert_relations"
+  on relations
+  for insert
+  to authenticated
+  with check (false);
+
+-- update policy for authenticated users
+-- rationale: regular users should not modify dictionary data
+create policy "authenticated_update_relations"
+  on relations
+  for update
+  to authenticated
+  using (false)
+  with check (false);
+
+-- delete policy for authenticated users
+-- rationale: regular users should not delete dictionary data
+create policy "authenticated_delete_relations"
+  on relations
+  for delete
+  to authenticated
+  using (false);
+
+-- ----------------------------------------------------------------------------
+-- 5.2 rls policies for occasions table (dictionary)
+-- ----------------------------------------------------------------------------
+
+-- select policy for anonymous users
+-- rationale: dictionary data should be publicly readable for form dropdowns
+create policy "anon_select_occasions"
+  on occasions
+  for select
+  to anon
+  using (true);
+
+-- select policy for authenticated users
+-- rationale: authenticated users also need full read access to occasion types
+create policy "authenticated_select_occasions"
   on occasions
   for select
   to authenticated
   using (true);
 
--- rls policies for ideas table (user data)
-create policy "users can view their own ideas"
+-- insert policy for authenticated users
+-- rationale: regular users should not modify dictionary data
+-- this policy blocks all user inserts (only backend can modify)
+create policy "authenticated_insert_occasions"
+  on occasions
+  for insert
+  to authenticated
+  with check (false);
+
+-- update policy for authenticated users
+-- rationale: regular users should not modify dictionary data
+create policy "authenticated_update_occasions"
+  on occasions
+  for update
+  to authenticated
+  using (false)
+  with check (false);
+
+-- delete policy for authenticated users
+-- rationale: regular users should not delete dictionary data
+create policy "authenticated_delete_occasions"
+  on occasions
+  for delete
+  to authenticated
+  using (false);
+
+-- ----------------------------------------------------------------------------
+-- 5.3 rls policies for ideas table (user data)
+-- ----------------------------------------------------------------------------
+
+-- note: no select policy for anon role - ideas contain personal user data
+
+-- select policy for authenticated users
+-- rationale: users should only see their own gift ideas
+-- optimization: (select auth.uid()) is evaluated once per query, not per row
+create policy "authenticated_select_ideas"
   on ideas
   for select
   to authenticated
   using ((select auth.uid()) = user_id);
 
-create policy "users can insert their own ideas"
+-- insert policy for authenticated users
+-- rationale: users can only create ideas for themselves
+create policy "authenticated_insert_ideas"
   on ideas
   for insert
   to authenticated
   with check ((select auth.uid()) = user_id);
 
-create policy "users can update their own ideas"
+-- update policy for authenticated users
+-- rationale: users can only update their own ideas
+create policy "authenticated_update_ideas"
   on ideas
   for update
   to authenticated
   using ((select auth.uid()) = user_id)
   with check ((select auth.uid()) = user_id);
 
-create policy "users can delete their own ideas"
+-- delete policy for authenticated users
+-- rationale: users can only delete their own ideas
+create policy "authenticated_delete_ideas"
   on ideas
   for delete
   to authenticated
@@ -171,18 +263,7 @@ create trigger update_ideas_updated_at
   execute function update_updated_at_column();
 
 -- ============================================================================
--- 7. disable rls for development
--- ============================================================================
-
--- disable rls on all tables for local development
--- this allows easier testing without authentication
--- note: should be re-enabled in production environment
-alter table relations disable row level security;
-alter table occasions disable row level security;
-alter table ideas disable row level security;
-
--- ============================================================================
--- 8. seed data - relations
+-- 7. seed data - relations
 -- ============================================================================
 
 insert into relations (code, name) values
@@ -214,7 +295,7 @@ insert into relations (code, name) values
   ('other', 'Inna relacja');
 
 -- ============================================================================
--- 9. seed data - occasions
+-- 8. seed data - occasions
 -- ============================================================================
 
 insert into occasions (code, name) values
