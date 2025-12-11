@@ -60,6 +60,13 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Debug Cloudflare config
+        run: |
+          echo "Project name length: ${#CLOUDFLARE_PAGES_PROJECT}"
+          echo "Project name (with quotes): \"$CLOUDFLARE_PAGES_PROJECT\""
+        env:
+          CLOUDFLARE_PAGES_PROJECT: ${{ secrets.CLOUDFLARE_PAGES_PROJECT }}
+
       - name: Publish to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
