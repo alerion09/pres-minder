@@ -27,3 +27,7 @@ Testy:
 
 - Testy jednostkowe i integracyjne: Vitest + Testing Library (React)
 - Testy E2E: Playwright (Chromium/Firefox, headless/headful, trace)
+
+Deployments & Releases:
+
+- Cloudflare Pages + Functions z adapterem Astro (`@astrojs/cloudflare`) dla SSR/edge, preview deploys na PR, secrets per environment

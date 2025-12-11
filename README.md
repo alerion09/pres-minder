@@ -62,6 +62,10 @@ The application will be available at `http://localhost:3000` (default Astro port
 - **`npm run lint:fix`** - Run ESLint and automatically fix issues
 - **`npm run format`** - Format code using Prettier
 
+## Deployments & Releases
+
+- **Platform**: Cloudflare Pages + Functions (Astro adapter `@astrojs/cloudflare`)
+
 ## Testing
 
 ### Technologies
