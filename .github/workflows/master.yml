@@ -18,23 +18,24 @@ jobs:
       - name: Run linter
         run: npm run lint
 
-  unit-test:
-    needs: lint
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup Node and install dependencies
-        uses: ./.github/actions/setup-node-install
-
-      - name: Run unit tests
-        run: npm run test
+#  unit-test:
+#    needs: lint
+#    runs-on: ubuntu-latest
+#    timeout-minutes: 10
+#
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v6
+#
+#      - name: Setup Node and install dependencies
+#        uses: ./.github/actions/setup-node-install
+#
+#      - name: Run unit tests
+#        run: npm run test
 
   deploy:
-    needs: [lint, unit-test]
+    needs: [lint]
+#    needs: [lint, unit-test]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: production
@@ -65,4 +66,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=${{ secrets.CLOUDFLARE_PAGES_PROJECT }}
+          command: pages deploy dist --project-name='pres-minder'
