@@ -1,0 +1,7 @@
+{
+  "name": "pres-minder",
+  "compatibility_date": "2025-12-11", // Update to the day you deploy
+  "assets": {
+    "directory": "./dist"
+  }
+}
