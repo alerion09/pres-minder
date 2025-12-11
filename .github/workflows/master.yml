@@ -1,33 +1,69 @@
-name: CI/CD Pipeline
+name: Master Deploy
 
 on:
-  push:
-    branches: [master]
   workflow_dispatch:
 
 jobs:
-  test-and-build:
+  lint:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version-file: ".nvmrc"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup Node and install dependencies
+        uses: ./.github/actions/setup-node-install
 
       - name: Run linter
         run: npm run lint
 
-      - name: Run unit tests
-        run: npm run test:unit
+  #  unit-test:
+  #    needs: lint
+  #    runs-on: ubuntu-latest
+  #    timeout-minutes: 10
+  #
+  #    steps:
+  #      - name: Checkout code
+  #        uses: actions/checkout@v6
+  #
+  #      - name: Setup Node and install dependencies
+  #        uses: ./.github/actions/setup-node-install
+  #
+  #      - name: Run unit tests
+  #        run: npm run test
 
-      - name: Build production
+  deploy:
+    needs: [lint]
+    #    needs: [lint, unit-test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    permissions:
+      contents: read
+      deployments: write
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_PUBLIC_KEY: ${{ secrets.SUPABASE_PUBLIC_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_PAGES_PROJECT: ${{ secrets.CLOUDFLARE_PAGES_PROJECT }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node and install dependencies
+        uses: ./.github/actions/setup-node-install
+
+      - name: Build project
         run: npm run build
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=pres-minder

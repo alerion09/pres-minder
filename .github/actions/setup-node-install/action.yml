@@ -1,0 +1,25 @@
+name: Setup Node and install dependencies
+description: Configure Node.js via .nvmrc and install dependencies with npm ci.
+inputs:
+  cache:
+    description: Cache setting for actions/setup-node
+    required: false
+    default: npm
+  working-directory:
+    description: Optional working directory
+    required: false
+    default: .
+runs:
+  using: composite
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version-file: .nvmrc
+        cache: ${{ inputs.cache }}
+        cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: npm ci
