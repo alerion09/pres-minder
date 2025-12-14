@@ -23,6 +23,7 @@ describe("RegisterForm", () => {
   let fetchMock: ReturnType<typeof vi.fn<typeof fetch>>;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     fetchMock = vi.fn<typeof fetch>();
     vi.spyOn(globalThis, "fetch").mockImplementation(fetchMock);
     Object.defineProperty(window, "location", {
@@ -97,7 +98,7 @@ describe("RegisterForm", () => {
     });
   });
 
-  it("should register with email verification flow and redirect to login", async () => {
+  it("should register with email verification flow and show success message", async () => {
     fetchMock.mockResolvedValueOnce(await mockFetchResponse(200, { requiresEmailVerification: true }));
     render(<RegisterForm />);
 
@@ -107,10 +108,12 @@ describe("RegisterForm", () => {
     await userEvent.click(screen.getByRole("button", { name: "Utwórz konto" }));
 
     await waitFor(() => {
-      expect(showSuccessToast).toHaveBeenCalledWith(
-        "Konto zostało utworzone. Sprawdź swoją skrzynkę email i potwierdź adres"
-      );
-      expect(window.location.href).toBe("/login");
+      expect(screen.getByText("Konto zostało utworzone!")).toBeInTheDocument();
+      expect(
+        screen.getByText("Sprawdź swoją skrzynkę email i potwierdź konto, aby móc się zalogować.")
+      ).toBeInTheDocument();
+      expect(showSuccessToast).not.toHaveBeenCalled();
+      expect(window.location.href).toBe("http://localhost/");
     });
   });
 
