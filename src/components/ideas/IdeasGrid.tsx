@@ -40,7 +40,11 @@ export function IdeasGrid({
 
   // Show empty state if no ideas
   if (ideas.length === 0) {
-    return <EmptyState onCreate={onCreate} />;
+    return (
+      <div className="md:h-[calc(100vh-28rem)]">
+        <EmptyState onCreate={onCreate} />
+      </div>
+    );
   }
 
   // Show ideas grid
