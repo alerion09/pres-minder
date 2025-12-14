@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { GenerateIdeaCommand, GenerateIdeaResponseDTO, IdeaSuggestionDTO } from "@/types";
 import { createOpenRouterService } from "@/lib/services/openrouter/openrouter.service";
-import type { ResponseFormat } from "@/lib/types/openrouter.types";
+import type { ResponseFormat, JsonSchema } from "@/lib/types/openrouter.types";
 
 // ============================================================================
 // Validation Schema
@@ -93,7 +93,7 @@ export function parseAndValidateGenerateIdea(body: unknown): GenerateIdeaCommand
  * JSON Schema for gift ideas response format
  * Defines the structure for LLM to return gift suggestions
  */
-const GIFT_IDEAS_SCHEMA = {
+const GIFT_IDEAS_SCHEMA: JsonSchema = {
   type: "object",
   properties: {
     suggestions: {
@@ -118,7 +118,7 @@ const GIFT_IDEAS_SCHEMA = {
   },
   required: ["suggestions"],
   additionalProperties: false,
-} as const;
+};
 
 /**
  * Response format configuration for OpenRouter structured output

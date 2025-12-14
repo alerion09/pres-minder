@@ -210,8 +210,8 @@ export function IdeaFormDialog({
 
       if (mode === "create") {
         // POST /api/ideas
-        const command: CreateIdeaCommand = {
-          user_id: userId,
+        // Note: user_id is NOT sent in body - backend takes it from session
+        const command: Omit<CreateIdeaCommand, "user_id"> = {
           name: formData.name.trim(),
           content: formData.content.trim(),
           source,
@@ -242,8 +242,8 @@ export function IdeaFormDialog({
         onSaved(result.data);
       } else {
         // PUT /api/ideas/:id
-        const command: UpdateIdeaCommand = {
-          user_id: userId,
+        // Note: user_id is NOT sent in body - backend takes it from session
+        const command: Omit<UpdateIdeaCommand, "user_id"> = {
           name: formData.name.trim(),
           content: formData.content.trim(),
           source,

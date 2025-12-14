@@ -87,10 +87,10 @@ export const createIdeaSchema = z
  * Parses and validates request body for POST /api/ideas
  *
  * @param body - Raw request body object
- * @returns Validated CreateIdeaCommand with defaults applied
+ * @returns Validated CreateIdeaCommand without user_id (user_id is taken from session)
  * @throws ZodError if validation fails
  */
-export function parseAndValidateCreateIdea(body: unknown): CreateIdeaCommand {
+export function parseAndValidateCreateIdea(body: unknown): Omit<CreateIdeaCommand, "user_id"> {
   return createIdeaSchema.parse(body);
 }
 

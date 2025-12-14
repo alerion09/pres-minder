@@ -107,10 +107,10 @@ export const updateIdeaSchema = z
  * Parses and validates request body for PUT /api/ideas/:id
  *
  * @param body - Raw request body object
- * @returns Validated UpdateIdeaCommand
+ * @returns Validated UpdateIdeaCommand without user_id (user_id is taken from session)
  * @throws ZodError if validation fails
  */
-export function parseAndValidateUpdateIdea(body: unknown): UpdateIdeaCommand {
+export function parseAndValidateUpdateIdea(body: unknown): Omit<UpdateIdeaCommand, "user_id"> {
   return updateIdeaSchema.parse(body);
 }
 
