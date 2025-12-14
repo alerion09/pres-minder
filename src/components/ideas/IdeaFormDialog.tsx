@@ -283,12 +283,19 @@ export function IdeaFormDialog({
     setIsGenerating(true);
 
     try {
+      const selectedRelation = formData.relation_id
+        ? relations.find((r) => r.id.toString() === formData.relation_id)
+        : null;
+      const selectedOccasion = formData.occasion_id
+        ? occasions.find((o) => o.id.toString() === formData.occasion_id)
+        : null;
+
       const command: GenerateIdeaCommand = {
         age: formData.age ? Number(formData.age) : null,
         interests: formData.interests.trim() || null,
         person_description: formData.person_description.trim() || null,
-        relation_id: formData.relation_id ? Number(formData.relation_id) : null,
-        occasion_id: formData.occasion_id ? Number(formData.occasion_id) : null,
+        relation: selectedRelation?.name || null,
+        occasion: selectedOccasion?.name || null,
         budget_min: formData.budget_min ? Number(formData.budget_min) : null,
         budget_max: formData.budget_max ? Number(formData.budget_max) : null,
       };
