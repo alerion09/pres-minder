@@ -32,8 +32,8 @@ const supabase = Astro.locals.supabase;
 
 // Fetch relations, occasions, and ideas directly from database
 const [relationsRes, occasionsRes] = await Promise.all([
-  supabase.from("relations").select("id, name").order("name", { ascending: true }),
-  supabase.from("occasions").select("id, name").order("name", { ascending: true }),
+  supabase.from("relations").select("*").order("name", { ascending: true }),
+  supabase.from("occasions").select("*").order("name", { ascending: true }),
 ]);
 
 // Handle database errors

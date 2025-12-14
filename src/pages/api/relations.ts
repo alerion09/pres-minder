@@ -17,7 +17,7 @@ export const GET: APIRoute = async (context) => {
   // Query relations from database
   const { data: relations, error: dbError } = await supabase
     .from("relations")
-    .select("id, name")
+    .select("*")
     .order("name", { ascending: true });
 
   // Handle database errors

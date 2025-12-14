@@ -20,13 +20,13 @@ vi.mock("@/lib/utils/toast-helpers", () => ({
 }));
 
 const relations: RelationDTO[] = [
-  { id: 1, name: "Brat" },
-  { id: 2, name: "Siostra" },
+  { id: 1, name: "Brat", code: "brother" },
+  { id: 2, name: "Siostra", code: "sister" },
 ];
 
 const occasions: OccasionDTO[] = [
-  { id: 1, name: "Urodziny" },
-  { id: 2, name: "Święta" },
+  { id: 1, name: "Urodziny", code: "birthday" },
+  { id: 2, name: "Święta", code: "christmas" },
 ];
 
 const baseIdea: IdeaDTO = {
