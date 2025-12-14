@@ -18,6 +18,7 @@ export function RegisterForm() {
   const [errors, setErrors] = useState<Partial<Record<keyof RegisterDto, string>>>({});
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const emailId = useId();
   const passwordId = useId();
@@ -30,8 +31,9 @@ export function RegisterForm() {
       const { [field]: _, ...rest } = prev;
       return rest;
     });
-    // Clear global error
+    // Clear global error and success message
     setGlobalError(null);
+    setSuccessMessage(null);
   };
 
   const validateForm = (): boolean => {
@@ -56,6 +58,7 @@ export function RegisterForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setGlobalError(null);
+    setSuccessMessage(null);
 
     if (!validateForm()) {
       // Focus first error field
@@ -89,9 +92,13 @@ export function RegisterForm() {
 
       // Check if email verification is required
       if (data.requiresEmailVerification) {
-        showSuccessToast("Konto zostało utworzone. Sprawdź swoją skrzynkę email i potwierdź adres");
-        // Redirect to login page with info message
-        window.location.href = "/login";
+        // Show success message instead of toast
+        setSuccessMessage(
+          "Konto zostało utworzone pomyślnie! Sprawdź swoją skrzynkę email i potwierdź adres, aby móc się zalogować."
+        );
+        setFormData({ email: "", password: "", confirmPassword: "" });
+        // Keep form visible with success message
+        return;
       } else {
         showSuccessToast("Konto zostało utworzone pomyślnie");
         // Redirect to home page
@@ -120,6 +127,18 @@ export function RegisterForm() {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Błąd</AlertTitle>
           <AlertDescription>{globalError}</AlertDescription>
+        </Alert>
+      )}
+
+      {successMessage && (
+        <Alert
+          variant="default"
+          aria-live="polite"
+          className="border-green-200 bg-green-50 text-green-900 dark:border-green-800 dark:bg-green-950 dark:text-green-50"
+        >
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Sukces!</AlertTitle>
+          <AlertDescription>{successMessage}</AlertDescription>
         </Alert>
       )}
 
