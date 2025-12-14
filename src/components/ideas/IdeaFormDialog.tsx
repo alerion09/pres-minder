@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { showSuccessToast, showErrorToast } from "@/lib/utils/toast-helpers";
+import { Sparkles } from "lucide-react";
 import type {
   IdeaDTO,
   RelationDTO,
@@ -78,6 +79,9 @@ export function IdeaFormDialog({
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
   const [originalContent, setOriginalContent] = useState("");
   const [clickedCardIndex, setClickedCardIndex] = useState<number | null>(null);
+
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const aiSectionRef = useRef<HTMLDivElement>(null);
 
   // Inicjalizacja formularza w trybie edycji
   useEffect(() => {
@@ -317,6 +321,17 @@ export function IdeaFormDialog({
       const responseData: GenerateIdeaResponseDTO = result.data;
       setAiSuggestions(responseData.suggestions.map((s) => s.content));
       showSuccessToast("Wygenerowano propozycje pomysłów");
+
+      // Scroll to AI section after suggestions are rendered
+      setTimeout(() => {
+        if (aiSectionRef.current) {
+          aiSectionRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+            inline: "nearest",
+          });
+        }
+      }, 100);
     } catch (err) {
       console.error("[IdeaFormDialog] Generate AI error:", err);
       showErrorToast("Wystąpił błąd podczas generowania pomysłów");
@@ -333,6 +348,22 @@ export function IdeaFormDialog({
       return rest;
     });
     showSuccessToast("Propozycja dodana do treści pomysłu");
+
+    // Scroll to content field after suggestion is added with smooth animation
+    setTimeout(() => {
+      if (contentTextareaRef.current) {
+        contentTextareaRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          inline: "nearest",
+        });
+
+        // Focus after scrolling completes
+        setTimeout(() => {
+          contentTextareaRef.current?.focus();
+        }, 300);
+      }
+    }, 100);
 
     setTimeout(() => {
       setClickedCardIndex(null);
@@ -354,7 +385,7 @@ export function IdeaFormDialog({
         className="w-full sm:max-w-lg max-h-[90vh] flex flex-col gap-0 p-0"
         data-test-id="idea-form-dialog"
       >
-        <div className="flex-1 overflow-y-auto px-6 pt-6">
+        <div className="flex-1 overflow-y-auto px-6 pt-6" style={{ scrollBehavior: "smooth" }}>
           <DialogHeader className="mb-6">
             <DialogTitle>{mode === "create" ? "Dodaj nowy pomysł" : "Edytuj pomysł"}</DialogTitle>
             <DialogDescription className="sr-only">
@@ -550,6 +581,7 @@ export function IdeaFormDialog({
                 Treść pomysłu <span className="text-destructive">*</span>
               </Label>
               <Textarea
+                ref={contentTextareaRef}
                 id="content"
                 value={formData.content}
                 onChange={(e) => handleFieldChange("content", e.target.value)}
@@ -569,17 +601,19 @@ export function IdeaFormDialog({
             </div>
 
             {/* Panel AI */}
-            <div className="space-y-3 border-t pt-4" data-test-id="ai-suggestions-section">
+            <div ref={aiSectionRef} className="space-y-3 border-t pt-4" data-test-id="ai-suggestions-section">
               <div className="flex items-center justify-between">
                 <Label>Sugestie AI</Label>
                 <Button
                   type="button"
                   onClick={handleGenerateAI}
                   disabled={isGenerating || isPending}
-                  variant="outline"
-                  size="sm"
+                  variant="default"
+                  size="default"
                   data-test-id="generate-ai-ideas-button"
+                  className="gap-2"
                 >
+                  <Sparkles className={`h-4 w-4 ${isGenerating ? "animate-pulse" : ""}`} />
                   {isGenerating ? "Generowanie..." : "Wygeneruj pomysły"}
                 </Button>
               </div>
