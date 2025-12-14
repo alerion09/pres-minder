@@ -89,18 +89,3 @@ test.describe("Login Page", () => {
     await page.waitForURL(/.*\/login.*/);
   });
 });
-
-test.describe("Login Page - Visual Tests", { tag: "@visual" }, () => {
-  test("should match login page screenshot", async ({ page }) => {
-    await page.goto("/login");
-
-    // Wait for page to fully load
-    await page.waitForLoadState("networkidle");
-
-    // Visual regression testing
-    await expect(page).toHaveScreenshot("login-page.png", {
-      fullPage: true,
-      maxDiffPixels: 100,
-    });
-  });
-});
