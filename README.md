@@ -1,4 +1,4 @@
-# PresMinder
+# PresMinder 2
 
 [![Node.js Version](https://img.shields.io/badge/node-22.14.0-brightgreen)](https://nodejs.org/)
 [![Astro](https://img.shields.io/badge/Astro-5-orange)](https://astro.build)
