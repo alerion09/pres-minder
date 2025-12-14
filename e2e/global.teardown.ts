@@ -2,16 +2,17 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../src/db/database.types";
 
 /**
- * Global teardown - cleanup test data from Supabase
+ * Global teardown - cleanup test data from Supabasetak
  * Runs after all tests complete
  */
 async function globalTeardown() {
   const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_PUBLIC_KEY;
+  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const testUserId = process.env.E2E_USERNAME_ID;
 
-  if (!supabaseUrl || !supabaseKey) {
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
     console.warn("⚠️  Supabase credentials not found - skipping database cleanup");
+    console.warn("⚠️  Required: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.test");
     return;
   }
 
@@ -19,13 +20,9 @@ async function globalTeardown() {
     console.warn("⚠️  E2E_USERNAME_ID not found - skipping database cleanup");
     return;
   }
-
   console.log("🧹 Cleaning up test data from Supabase...");
 
-  // Create Supabase client for cleanup
-  const supabase = createClient<Database>(supabaseUrl, supabaseKey);
-
-  // Delete all ideas created by the test user
+  const supabase = createClient<Database>(supabaseUrl, supabaseServiceRoleKey);
   const { error, count } = await supabase.from("ideas").delete({ count: "exact" }).eq("user_id", testUserId);
 
   if (error) {
