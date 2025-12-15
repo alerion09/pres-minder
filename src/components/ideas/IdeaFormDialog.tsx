@@ -79,6 +79,10 @@ export function IdeaFormDialog({
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
   const [originalContent, setOriginalContent] = useState("");
   const [clickedCardIndex, setClickedCardIndex] = useState<number | null>(null);
+  // Track the original AI-generated content that user accepted
+  const [acceptedAiContent, setAcceptedAiContent] = useState<string | null>(null);
+  // Track if user ever cleared the content field completely
+  const [wasContentCleared, setWasContentCleared] = useState(false);
 
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
   const aiSectionRef = useRef<HTMLDivElement>(null);
@@ -99,6 +103,12 @@ export function IdeaFormDialog({
           content: idea.content,
         });
         setOriginalContent(idea.content);
+        // In edit mode, track if the idea was originally from AI
+        if (idea.source === "ai" || idea.source === "edited-ai") {
+          setAcceptedAiContent(idea.content);
+        } else {
+          setAcceptedAiContent(null);
+        }
       } else if (mode === "create") {
         // Reset formularza w trybie create
         setFormData({
@@ -113,10 +123,12 @@ export function IdeaFormDialog({
           content: "",
         });
         setOriginalContent("");
+        setAcceptedAiContent(null);
       }
       // Jeśli mode === "edit" && !idea, nie rób nic - czekaj aż idea się pojawi
       setErrors({});
       setAiSuggestions([]);
+      setWasContentCleared(false);
     }
   }, [open, mode, idea]);
 
@@ -179,17 +191,20 @@ export function IdeaFormDialog({
   };
 
   const determineSource = (): IdeaSource => {
+    const userClearedAiContent = wasContentCleared && acceptedAiContent !== null;
+
     if (mode === "edit" && idea) {
-      // Jeśli treść została zmieniona i oryginalnie była z AI, zmień na edited-ai
-      if (idea.source === "ai" && formData.content !== originalContent) {
-        return "edited-ai";
-      }
-      // W przeciwnym razie zachowaj oryginalne źródło
+      if (userClearedAiContent) return "manual";
+
+      const isAiSource = idea.source === "ai" || idea.source === "edited-ai";
+      if (isAiSource && formData.content !== originalContent) return "edited-ai";
+
       return idea.source;
     }
 
-    // W trybie create: jeśli treść pochodzi z AI suggestions, to "ai", w przeciwnym razie "manual"
-    return aiSuggestions.includes(formData.content) ? "ai" : "manual";
+    if (userClearedAiContent || acceptedAiContent === null) return "manual";
+
+    return formData.content === acceptedAiContent ? "ai" : "edited-ai";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -347,6 +362,10 @@ export function IdeaFormDialog({
       const { content, ...rest } = prev;
       return rest;
     });
+    // Track the accepted AI content for source determination
+    setAcceptedAiContent(suggestion);
+    // Reset the cleared flag since we're setting new AI content
+    setWasContentCleared(false);
     showSuccessToast("Propozycja dodana do treści pomysłu");
 
     // Scroll to content field after suggestion is added with smooth animation
@@ -372,11 +391,14 @@ export function IdeaFormDialog({
 
   const handleFieldChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Usuń błąd dla tego pola
     setErrors((prev) => {
       const { [field]: _, ...rest } = prev;
       return rest;
     });
+
+    if (field === "content" && value.trim() === "" && acceptedAiContent !== null) {
+      setWasContentCleared(true);
+    }
   };
 
   return (

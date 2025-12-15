@@ -191,4 +191,163 @@ describe("IdeaFormDialog", () => {
       } as Response);
     });
   });
+
+  describe("Idea Source Type", () => {
+    it("should create idea with source=ai when AI suggestion is accepted without edits", async () => {
+      const onSaved = vi.fn();
+      fetchMock
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ data: { suggestions: [{ content: "AI generated content" }] } }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ data: { id: 12, name: "AI Idea", source: "ai" } }),
+        } as Response);
+      const user = userEvent.setup();
+      renderDialog({ onSaved });
+
+      await user.type(screen.getByLabelText(/nazwa pomysłu/i), "AI Idea");
+      await user.click(screen.getByRole("button", { name: /wygeneruj pomysły/i }));
+      await waitFor(() => expect(screen.getByText("AI generated content")).toBeInTheDocument());
+
+      await act(async () => {
+        await user.click(screen.getByText("AI generated content"));
+      });
+
+      await user.click(screen.getByRole("button", { name: /dodaj pomysł/i }));
+
+      await waitFor(() => {
+        const [, options] = fetchMock.mock.calls[1];
+        expect(JSON.parse((options as RequestInit).body as string).source).toBe("ai");
+        expect(onSaved).toHaveBeenCalled();
+      });
+    });
+
+    it("should create idea with source=edited-ai when AI suggestion is edited", async () => {
+      const onSaved = vi.fn();
+      fetchMock
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ data: { suggestions: [{ content: "AI content" }] } }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ data: { id: 13, name: "Edited AI", source: "edited-ai" } }),
+        } as Response);
+      const user = userEvent.setup();
+      renderDialog({ onSaved });
+
+      await user.type(screen.getByLabelText(/nazwa pomysłu/i), "Edited AI");
+      await user.click(screen.getByRole("button", { name: /wygeneruj pomysły/i }));
+      await waitFor(() => expect(screen.getByText("AI content")).toBeInTheDocument());
+
+      await act(async () => {
+        await user.click(screen.getByText("AI content"));
+      });
+
+      await user.type(screen.getByLabelText(/treść pomysłu/i), " with my edits");
+      await user.click(screen.getByRole("button", { name: /dodaj pomysł/i }));
+
+      await waitFor(() => {
+        const [, options] = fetchMock.mock.calls[1];
+        expect(JSON.parse((options as RequestInit).body as string).source).toBe("edited-ai");
+        expect(onSaved).toHaveBeenCalled();
+      });
+    });
+
+    it("should create idea with source=manual when AI content is cleared and replaced", async () => {
+      const onSaved = vi.fn();
+      fetchMock
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ data: { suggestions: [{ content: "AI suggestion" }] } }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ data: { id: 14, name: "Manual", source: "manual" } }),
+        } as Response);
+      const user = userEvent.setup();
+      renderDialog({ onSaved });
+
+      await user.type(screen.getByLabelText(/nazwa pomysłu/i), "Manual");
+      await user.click(screen.getByRole("button", { name: /wygeneruj pomysły/i }));
+      await waitFor(() => expect(screen.getByText("AI suggestion")).toBeInTheDocument());
+
+      await act(async () => {
+        await user.click(screen.getByText("AI suggestion"));
+      });
+
+      await user.clear(screen.getByLabelText(/treść pomysłu/i));
+      await user.type(screen.getByLabelText(/treść pomysłu/i), "Completely manual content");
+      await user.click(screen.getByRole("button", { name: /dodaj pomysł/i }));
+
+      await waitFor(() => {
+        const [, options] = fetchMock.mock.calls[1];
+        expect(JSON.parse((options as RequestInit).body as string).source).toBe("manual");
+        expect(onSaved).toHaveBeenCalled();
+      });
+    });
+
+    it("should keep source=manual when editing manual idea", async () => {
+      const manualIdea: IdeaDTO = { ...baseIdea, source: "manual", content: "Manual content" };
+      const onSaved = vi.fn();
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ data: { ...manualIdea, source: "manual" } }),
+      } as Response);
+      const user = userEvent.setup();
+      renderDialog({ mode: "edit", idea: manualIdea, onSaved });
+
+      await user.type(screen.getByLabelText(/treść pomysłu/i), " edited");
+      await user.click(screen.getByRole("button", { name: /zapisz zmiany/i }));
+
+      await waitFor(() => {
+        const [, options] = fetchMock.mock.calls[0];
+        expect(JSON.parse((options as RequestInit).body as string).source).toBe("manual");
+        expect(onSaved).toHaveBeenCalled();
+      });
+    });
+
+    it("should keep source=ai when editing AI idea without changing content", async () => {
+      const aiIdea: IdeaDTO = { ...baseIdea, source: "ai", content: "AI content" };
+      const onSaved = vi.fn();
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ data: { ...aiIdea, source: "ai" } }),
+      } as Response);
+      const user = userEvent.setup();
+      renderDialog({ mode: "edit", idea: aiIdea, onSaved });
+
+      await user.type(screen.getByLabelText(/nazwa pomysłu/i), " Updated");
+      await user.click(screen.getByRole("button", { name: /zapisz zmiany/i }));
+
+      await waitFor(() => {
+        const [, options] = fetchMock.mock.calls[0];
+        expect(JSON.parse((options as RequestInit).body as string).source).toBe("ai");
+        expect(onSaved).toHaveBeenCalled();
+      });
+    });
+
+    it("should change source to manual when clearing AI content in edit mode", async () => {
+      const aiIdea: IdeaDTO = { ...baseIdea, source: "edited-ai", content: "Edited AI content" };
+      const onSaved = vi.fn();
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ data: { ...aiIdea, source: "manual" } }),
+      } as Response);
+      const user = userEvent.setup();
+      renderDialog({ mode: "edit", idea: aiIdea, onSaved });
+
+      await user.clear(screen.getByLabelText(/treść pomysłu/i));
+      await user.type(screen.getByLabelText(/treść pomysłu/i), "Brand new manual content");
+      await user.click(screen.getByRole("button", { name: /zapisz zmiany/i }));
+
+      await waitFor(() => {
+        const [, options] = fetchMock.mock.calls[0];
+        expect(JSON.parse((options as RequestInit).body as string).source).toBe("manual");
+        expect(onSaved).toHaveBeenCalled();
+      });
+    });
+  });
 });
